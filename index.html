@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CMS Editorial - Wireframe MVP</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <h1>CMS Editorial</h1>
+        <p class="subtitle">Wireframe MVP</p>
+
+        <label for="perfil">Perfil</label>
+        <select id="perfil">
+          <option value="admin">Admin/Gestor</option>
+          <option value="editor">Editor/Autor</option>
+          <option value="diagramador">Diagramador</option>
+        </select>
+
+        <nav>
+          <button class="nav-btn active" data-screen="geral">Tela Geral</button>
+          <button class="nav-btn" data-screen="edicao">Tela de Edição</button>
+          <button class="nav-btn" data-screen="notificacoes">Notificações</button>
+        </nav>
+      </aside>
+
+      <main class="content">
+        <section id="screen-geral" class="screen active">
+          <header class="screen-header">
+            <h2>Visão Geral (Admin)</h2>
+            <p>Priorização por filtros, alertas e possibilidade de adiantamento por parte liberada.</p>
+          </header>
+
+          <div class="filters">
+            <input id="filtroBusca" type="text" placeholder="Buscar obra/projeto" />
+            <select id="filtroEquipe">
+              <option value="">Equipe</option>
+              <option value="Editorial">Editorial</option>
+              <option value="Diagramação">Diagramação</option>
+              <option value="Digital">Digital</option>
+              <option value="Gestão">Gestão</option>
+            </select>
+            <select id="filtroStatus">
+              <option value="">Status</option>
+              <option value="Em andamento">Em andamento</option>
+              <option value="Bloqueado">Bloqueado</option>
+              <option value="Aguardando aprovação">Aguardando aprovação</option>
+              <option value="Concluído">Concluído</option>
+            </select>
+            <select id="filtroPrioridade">
+              <option value="">Prioridade</option>
+              <option value="Baixa">Baixa</option>
+              <option value="Média">Média</option>
+              <option value="Alta">Alta</option>
+              <option value="Emergencial">Emergencial</option>
+            </select>
+          </div>
+
+          <div class="kpis" id="kpis"></div>
+
+          <div class="layout-grid">
+            <section class="card">
+              <h3>Itens do fluxo</h3>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Projeto</th>
+                    <th>Equipe</th>
+                    <th>Status</th>
+                    <th>Prazo</th>
+                    <th>Parte liberada</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="tabelaItens"></tbody>
+              </table>
+            </section>
+
+            <section class="card summary-notifications">
+              <h3>Resumo de Notificações</h3>
+              <div class="summary-grid">
+                <div class="metric-pill">
+                  <small>Normais</small>
+                  <strong id="resumoNormais">0</strong>
+                </div>
+                <div class="metric-pill">
+                  <small>Emergenciais</small>
+                  <strong id="resumoEmergenciais">0</strong>
+                </div>
+              </div>
+              <button type="button" id="btnAbrirNotificacoes">Abrir Central</button>
+            </section>
+          </div>
+        </section>
+
+        <section id="screen-notificacoes" class="screen">
+          <header class="screen-header">
+            <h2>Central de Notificações</h2>
+            <p>Comunicação centralizada por projeto, disciplina e etapas do processo.</p>
+          </header>
+
+          <div class="notifications-screen-grid">
+            <section class="card folder-card">
+              <h3>Projeto PRE-UNI26</h3>
+              <p class="hint">Estrutura em subpastas por disciplina.</p>
+              <ul id="estruturaProjeto" class="project-tree"></ul>
+            </section>
+
+            <section class="card notifications">
+              <div class="notif-header">
+                <h3>Feed de Notificações</h3>
+                <div>
+                  <button class="mini-btn active" data-notif-filter="all">Todas</button>
+                  <button class="mini-btn" data-notif-filter="normal">Normais</button>
+                  <button class="mini-btn" data-notif-filter="emergencial">Emergenciais</button>
+                </div>
+              </div>
+              <ul id="listaNotificacoes"></ul>
+            </section>
+          </div>
+        </section>
+
+        <section id="screen-tarefa" class="screen">
+          <header class="screen-header task-header">
+            <div>
+              <p id="tarefaBreadcrumb" class="hint">PRE-UNI26</p>
+              <h2 id="tarefaTitulo">Tarefa</h2>
+              <p id="tarefaSubtitulo">Visão macro para acompanhamento e decisão rápida.</p>
+            </div>
+            <button type="button" id="btnVoltarNotificacoes" class="ghost">Voltar para Central</button>
+          </header>
+
+          <section class="task-macro-grid">
+            <article class="card macro-card">
+              <h3>Status e Prazo</h3>
+              <div class="macro-line"><span>Status</span><strong id="taskStatus">-</strong></div>
+              <div class="macro-line"><span>Prioridade</span><strong id="taskPrioridade">-</strong></div>
+              <div class="macro-line"><span>Prazo</span><strong id="taskPrazo">-</strong></div>
+              <div class="macro-line"><span>SLA</span><strong id="taskSla">-</strong></div>
+            </article>
+
+            <article class="card macro-card">
+              <h3>Responsáveis</h3>
+              <div class="macro-line"><span>Dono da tarefa</span><strong id="taskResponsavel">-</strong></div>
+              <div class="macro-line"><span>Equipe</span><strong id="taskEquipe">-</strong></div>
+              <div class="macro-line"><span>Comentários abertos</span><strong id="taskComentariosAbertos">-</strong></div>
+              <div class="macro-line"><span>Alertas emergenciais</span><strong id="taskAlertas">-</strong></div>
+            </article>
+
+            <article class="card macro-card progress-card">
+              <h3>Andamento</h3>
+              <p id="taskEntregavel" class="hint">-</p>
+              <div class="progress-wrap">
+                <div id="taskProgressFill" class="progress-fill"></div>
+              </div>
+              <strong id="taskProgresso">0%</strong>
+              <p id="taskUltimaAtualizacao" class="hint">Última atualização: -</p>
+            </article>
+          </section>
+
+          <section class="task-detail-grid">
+            <article class="card macro-card">
+              <h3>Dependências</h3>
+              <ul id="taskDependencias" class="macro-list"></ul>
+            </article>
+
+            <article class="card macro-card">
+              <h3>Riscos e Bloqueios</h3>
+              <p id="taskBloqueio" class="hint">-</p>
+              <ul id="taskRiscos" class="macro-list"></ul>
+            </article>
+
+            <article class="card macro-card">
+              <h3>Ações Mais Utilizadas</h3>
+              <ul id="taskAcoesPerfil" class="macro-list"></ul>
+            </article>
+          </section>
+        </section>
+
+        <section id="screen-edicao" class="screen">
+          <header class="screen-header">
+            <h2>Edição: Arquivo Raiz vs Layout</h2>
+            <p>Edição controlada por perfil, comentários com atribuição obrigatória e alertas.</p>
+          </header>
+
+          <div class="editor-toolbar">
+            <button type="button" id="btnStamp">Adicionar comentário (stamp)</button>
+            <button type="button" id="btnHistorico" class="ghost">Comentários</button>
+            <p id="stampHint" class="hint">Ative o modo stamp para marcar no layout.</p>
+          </div>
+
+          <div class="editor-layout">
+            <section class="card panel-raiz">
+              <h3>Arquivo Raiz</h3>
+              <textarea id="arquivoRaiz"></textarea>
+              <p id="raizHint" class="hint"></p>
+            </section>
+
+            <section class="card panel-layout">
+              <div class="tabs">
+                <button class="tab-btn active" data-layout-tab="pre">Pré-diagramação</button>
+                <button class="tab-btn" data-layout-tab="diag">Diagramação</button>
+                <button class="tab-btn" data-layout-tab="html">HTML Digital</button>
+              </div>
+              <div id="layoutPreview" class="preview pre"></div>
+              <p id="layoutHint" class="hint"></p>
+            </section>
+          </div>
+
+          <section class="card comments-overview">
+            <div class="comments-metrics">
+              <div class="metric-pill">
+                <small>Comentários visíveis</small>
+                <strong id="comentariosVisiveis">0</strong>
+              </div>
+              <div class="metric-pill">
+                <small>Total no arquivo</small>
+                <strong id="comentariosTotais">0</strong>
+              </div>
+              <div class="metric-pill">
+                <small>Emergenciais</small>
+                <strong id="comentariosEmergenciais">0</strong>
+              </div>
+              <p id="visaoPerfilHint" class="hint"></p>
+            </div>
+            <div class="jump-list-wrap">
+              <h4>Atalhos de comentários</h4>
+              <ul id="commentMap" class="comment-map"></ul>
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <aside id="commentsDrawer" class="comments-drawer hidden" aria-label="Comentários">
+      <div id="commentsDrawerBackdrop" class="comments-drawer-backdrop"></div>
+      <section class="comments-drawer-panel">
+        <div class="history-header">
+          <div>
+            <h3>Comentários</h3>
+            <p class="hint">Gestão completa do histórico, filtros e resolução.</p>
+          </div>
+          <button type="button" id="fecharHistorico" class="ghost">Fechar</button>
+        </div>
+
+        <div class="drawer-filters">
+          <select id="filtroComentariosStatus">
+            <option value="todos">Todos os status</option>
+            <option value="aberto">Abertos</option>
+            <option value="resolvido">Resolvidos</option>
+          </select>
+          <select id="filtroComentariosEquipe">
+            <option value="todas">Todas as equipes</option>
+            <option value="Editorial">Editorial</option>
+            <option value="Diagramação">Diagramação</option>
+            <option value="Digital">Digital</option>
+            <option value="Gestão">Gestão</option>
+          </select>
+        </div>
+
+        <ul id="historicoComentarios"></ul>
+      </section>
+    </aside>
+
+    <div id="comentarioModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitulo">
+      <div class="modal-card">
+        <h3 id="modalTitulo">Novo comentário</h3>
+        <p id="modalContexto" class="hint"></p>
+        <form id="comentarioForm">
+          <textarea id="comentarioTexto" placeholder="Descreva a solicitação..."></textarea>
+          <div class="row">
+            <select id="comentarioEquipe" required>
+              <option value="">Atribuir equipe (obrigatório)</option>
+              <option value="Editorial">Editorial</option>
+              <option value="Diagramação">Diagramação</option>
+              <option value="Digital">Digital</option>
+              <option value="Gestão">Gestão</option>
+            </select>
+            <select id="comentarioPrioridade">
+              <option value="Média">Prioridade média</option>
+              <option value="Alta">Prioridade alta</option>
+              <option value="Emergencial">Emergencial</option>
+            </select>
+          </div>
+          <div class="row row-actions">
+            <button type="submit">Salvar comentário</button>
+            <button type="button" id="btnEmergencial" class="danger">Acionar alerta emergencial</button>
+            <button type="button" id="cancelarComentario" class="ghost">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="commentDetailModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="detailTitulo">
+      <div class="modal-card">
+        <h3 id="detailTitulo">Comentário</h3>
+        <div class="comment-head">
+          <strong id="detailNumero">#1</strong>
+          <div class="comment-tags">
+            <span id="detailPrioridade" class="tag-priority default">Média</span>
+            <span id="detailEquipe" class="tag-team">Diagramação</span>
+            <span id="detailStatus" class="tag-priority default">Aberto</span>
+          </div>
+        </div>
+        <p id="detailAlvo" class="hint"></p>
+        <p id="detailTexto"></p>
+
+        <section class="thread-section">
+          <div class="thread-section-head">
+            <h4>Thread do comentário</h4>
+            <small>Idas e vindas entre equipes ficam registradas aqui.</small>
+          </div>
+          <ul id="detailThreadList" class="detail-thread-list"></ul>
+          <div class="thread-compose">
+            <textarea id="detailThreadInput" placeholder="Adicionar nova demanda, resposta ou contexto..."></textarea>
+            <button type="button" id="btnAdicionarThread" class="ghost">Adicionar no thread</button>
+          </div>
+        </section>
+
+        <div class="row row-actions">
+          <button type="button" id="btnIrParaComentario">Ir para trecho</button>
+          <button type="button" id="btnResolverComentario" class="success-action">Resolver comentário</button>
+          <button type="button" id="btnFecharComentario" class="ghost">Fechar</button>
+        </div>
+
+        <section class="return-section">
+          <p class="hint">Se não for para resolver agora, devolva para outra área responsável.</p>
+          <div class="row return-row">
+            <select id="devolverEquipe">
+              <option value="Editorial">Editorial</option>
+              <option value="Diagramação">Diagramação</option>
+              <option value="Digital">Digital</option>
+              <option value="Gestão">Gestão</option>
+            </select>
+            <button type="button" id="btnDevolverArea">Devolver para área</button>
+          </div>
+        </section>
+        <p id="detailResolutionMeta" class="hint"></p>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
