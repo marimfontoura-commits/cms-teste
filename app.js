@@ -1,7 +1,11 @@
 const state = {
   perfil: "admin",
+  currentScreen: "geral",
+  lastScreenBeforeTask: "geral",
+  geralView: "fluxo",
   layoutTab: "pre",
   notifFilter: "all",
+  quickFilter: "",
   currentTaskId: null,
   stampMode: false,
   pendingAnchor: null,
@@ -10,6 +14,13 @@ const state = {
   commentTeamFilter: "todas",
   expandedComments: {},
   nextCommentId: 7,
+  raizBlocks: [],
+  raizNextBlockId: 1,
+  activeRaizBlockId: null,
+  raizPageBreakAlertActive: false,
+  raizPageBreakAcknowledged: false,
+  raizSafeBlocksSnapshot: [],
+  raizSafeActiveBlockId: null,
   raizTexto: `Capitulo 1 - Ecossistemas\n\nA biodiversidade e formada por especies, genes e ecossistemas.\nEste texto e apenas uma simulacao para validar fluxo editorial no CMS.`,
   itens: [
     {
@@ -18,6 +29,8 @@ const state = {
       status: "Em andamento",
       prazo: "2026-06-03",
       prioridade: "Alta",
+      selo: "SAE",
+      segmento: "AI",
       parteLiberada: true,
     },
     {
@@ -26,6 +39,8 @@ const state = {
       status: "Bloqueado",
       prazo: "2026-06-01",
       prioridade: "Emergencial",
+      selo: "SPE",
+      segmento: "AF",
       parteLiberada: false,
     },
     {
@@ -34,6 +49,8 @@ const state = {
       status: "Aguardando aprovação",
       prazo: "2026-06-10",
       prioridade: "Média",
+      selo: "COC",
+      segmento: "EI",
       parteLiberada: true,
     },
   ],
@@ -52,7 +69,7 @@ const state = {
   comentarios: [
     {
       id: 1,
-      texto: "Trocar imagem da abertura para evitar corte no rodape.",
+      texto: "Ajustar o enquadramento da imagem principal para não cortar o título no impresso.",
       equipe: "Diagramação",
       prioridade: "Média",
       resolvido: false,
@@ -60,16 +77,16 @@ const state = {
       historico: [
         {
           tipo: "criado",
-          descricao: "Comentário criado e atribuído para Diagramação.",
+          descricao: "Comentário criado no preview Impresso e atribuído para Diagramação.",
           quando: "agora",
         },
       ],
-      anchor: { tipo: "layout", tab: "pre", x: 72, y: 28 },
-      alvo: "Layout pre",
+      anchor: { tipo: "layout", tab: "pre", x: 68, y: 56 },
+      alvo: "Impresso",
     },
     {
       id: 2,
-      texto: "Ajustar o termo tecnico no paragrafo 2 para padrao editorial.",
+      texto: "Revisar o termo técnico no primeiro parágrafo para manter o padrão editorial da coleção.",
       equipe: "Editorial",
       prioridade: "Média",
       resolvido: false,
@@ -77,16 +94,16 @@ const state = {
       historico: [
         {
           tipo: "criado",
-          descricao: "Comentário criado em Edição e enviado para Editorial.",
+          descricao: "Comentário criado no corpo do texto e enviado para Editorial.",
           quando: "agora",
         },
       ],
-      anchor: { tipo: "layout", tab: "pre", x: 44, y: 64 },
-      alvo: "Layout pre",
+      anchor: { tipo: "layout", tab: "pre", x: 28, y: 43 },
+      alvo: "Impresso",
     },
     {
       id: 3,
-      texto: "Emergencial: quebra de pagina gerou viuva e precisa de ajuste imediato.",
+      texto: "Emergencial: título + box de imagem estouraram a dobra da página no impresso.",
       equipe: "Diagramação",
       prioridade: "Emergencial",
       resolvido: false,
@@ -94,16 +111,16 @@ const state = {
       historico: [
         {
           tipo: "criado",
-          descricao: "Comentário emergencial criado para Diagramação.",
+          descricao: "Alerta emergencial aberto para Diagramação por conflito de composição na página.",
           quando: "ha 8 min",
         },
       ],
-      anchor: { tipo: "layout", tab: "diag", x: 42, y: 52 },
-      alvo: "Layout diag",
+      anchor: { tipo: "layout", tab: "pre", x: 52, y: 32 },
+      alvo: "Impresso",
     },
     {
       id: 4,
-      texto: "Revisar chamada de atividade para consistencia com o guia pedagogico.",
+      texto: "Padronizar a chamada da atividade com o glossário pedagógico da unidade.",
       equipe: "Editorial",
       prioridade: "Alta",
       resolvido: true,
@@ -113,7 +130,7 @@ const state = {
       historico: [
         {
           tipo: "criado",
-          descricao: "Comentário criado em Edição e atribuído para Editorial.",
+          descricao: "Comentário criado no título secundário e atribuído para Editorial.",
           quando: "Ontem, 17:42",
         },
         {
@@ -122,12 +139,12 @@ const state = {
           quando: "Hoje, 09:12",
         },
       ],
-      anchor: { tipo: "layout", tab: "pre", x: 18, y: 42 },
-      alvo: "Layout pre",
+      anchor: { tipo: "layout", tab: "pre", x: 24, y: 28 },
+      alvo: "Impresso",
     },
     {
       id: 5,
-      texto: "Validar impacto de prazo com alteracao nao prevista no fluxo.",
+      texto: "Confirmar impacto no cronograma após inclusão do box de imagem adicional.",
       equipe: "Gestão",
       prioridade: "Emergencial",
       resolvido: false,
@@ -135,16 +152,16 @@ const state = {
       historico: [
         {
           tipo: "criado",
-          descricao: "Comentário criado e escalado para Gestão.",
+          descricao: "Comentário escalado para Gestão com foco em prazo e retrabalho.",
           quando: "ha 20 min",
         },
       ],
-      anchor: { tipo: "layout", tab: "pre", x: 30, y: 66 },
-      alvo: "Layout pre",
+      anchor: { tipo: "layout", tab: "pre", x: 44, y: 72 },
+      alvo: "Impresso",
     },
     {
       id: 6,
-      texto: "Uniformizar estilo do box complementar na versao digital.",
+      texto: "Uniformizar o estilo do card de imagem na versão digital para manter consistência visual.",
       equipe: "Diagramação",
       prioridade: "Alta",
       resolvido: true,
@@ -154,7 +171,7 @@ const state = {
       historico: [
         {
           tipo: "criado",
-          descricao: "Comentário criado e atribuído para Diagramação.",
+          descricao: "Comentário criado na aba Digital e atribuído para Diagramação.",
           quando: "Ontem, 16:55",
         },
         {
@@ -173,8 +190,8 @@ const state = {
           quando: "Ontem, 18:40",
         },
       ],
-      anchor: { tipo: "layout", tab: "html", x: 55, y: 40 },
-      alvo: "Layout html",
+      anchor: { tipo: "layout", tab: "html", x: 58, y: 44 },
+      alvo: "Digital",
     },
   ],
   layoutStamps: [],
@@ -188,6 +205,7 @@ const state = {
     ],
     etapas: ["Edicao", "Revisao", "Diagramacao"],
   },
+  fluxosEditoriais: ["Original", "Edição", "Revisão", "Diagramação", "Aprovação Final"],
   tarefasProjeto: [
     {
       id: 101,
@@ -197,6 +215,8 @@ const state = {
       titulo: "MAT - Capitulo 3 (Edicao)",
       status: "Em andamento",
       prioridade: "Alta",
+      selo: "SAE",
+      segmento: "AI",
       prazo: "2026-06-08",
       sla: "48h",
       responsavel: "Ana Souza",
@@ -218,6 +238,8 @@ const state = {
       titulo: "MAT - Capitulo 3 (Revisao)",
       status: "Aguardando aprovação",
       prioridade: "Média",
+      selo: "SPE",
+      segmento: "AI",
       prazo: "2026-06-10",
       sla: "72h",
       responsavel: "Bruno Lima",
@@ -239,6 +261,8 @@ const state = {
       titulo: "MAT - Capitulo 3 (Diagramacao)",
       status: "Bloqueado",
       prioridade: "Emergencial",
+      selo: "COC",
+      segmento: "AF",
       prazo: "2026-06-06",
       sla: "24h",
       responsavel: "Carla Nunes",
@@ -260,6 +284,8 @@ const state = {
       titulo: "POR - Unidade 2 (Edicao)",
       status: "Em andamento",
       prioridade: "Média",
+      selo: "CQT",
+      segmento: "EI",
       prazo: "2026-06-09",
       sla: "48h",
       responsavel: "Diego Rocha",
@@ -281,6 +307,8 @@ const state = {
       titulo: "GEO - Unidade 4 (Diagramacao)",
       status: "Em andamento",
       prioridade: "Alta",
+      selo: "SAS",
+      segmento: "AF",
       prazo: "2026-06-07",
       sla: "36h",
       responsavel: "Elaine Prado",
@@ -310,13 +338,30 @@ const els = {
   filtroEquipe: document.querySelector("#filtroEquipe"),
   filtroStatus: document.querySelector("#filtroStatus"),
   filtroPrioridade: document.querySelector("#filtroPrioridade"),
+  filtroSelo: document.querySelector("#filtroSelo"),
+  filtroSegmento: document.querySelector("#filtroSegmento"),
+  filtrosHint: document.querySelector("#filtrosHint"),
+  viewTabs: document.querySelectorAll(".view-tab"),
+  viewFluxo: document.querySelector("#view-fluxo"),
+  viewOperacional: document.querySelector("#view-operacional"),
+  dashCards: document.querySelectorAll(".dash-card[data-dash-action]"),
   tabelaItens: document.querySelector("#tabelaItens"),
   kpis: document.querySelector("#kpis"),
+  dashAtrasadas: document.querySelector("#dashAtrasadas"),
+  dashBloqueios: document.querySelector("#dashBloqueios"),
+  dashComentarios: document.querySelector("#dashComentarios"),
+  dashImpactos: document.querySelector("#dashImpactos"),
+  fluxoResumo: document.querySelector("#fluxoResumo"),
+  operacionalResumo: document.querySelector("#operacionalResumo"),
+  fluxoScroll: document.querySelector("#fluxoScroll"),
+  fluxoScrollPrev: document.querySelector("#fluxoScrollPrev"),
+  fluxoScrollNext: document.querySelector("#fluxoScrollNext"),
+  fluxoEtapas: document.querySelector("#fluxoEtapas"),
   listaNotificacoes: document.querySelector("#listaNotificacoes"),
-  notifBtns: document.querySelectorAll(".mini-btn"),
-  btnAbrirNotificacoes: document.querySelector("#btnAbrirNotificacoes"),
-  resumoNormais: document.querySelector("#resumoNormais"),
-  resumoEmergenciais: document.querySelector("#resumoEmergenciais"),
+  notificacoesSubtitulo: document.querySelector("#notificacoesSubtitulo"),
+  notifBtns: document.querySelectorAll(".mini-btn[data-notif-filter]"),
+  btnBellNotificacoes: document.querySelector("#btnBellNotificacoes"),
+  btnExportarRelatorio: document.querySelector("#btnExportarRelatorio"),
   estruturaProjeto: document.querySelector("#estruturaProjeto"),
   btnVoltarNotificacoes: document.querySelector("#btnVoltarNotificacoes"),
   tarefaBreadcrumb: document.querySelector("#tarefaBreadcrumb"),
@@ -339,7 +384,16 @@ const els = {
   taskRiscos: document.querySelector("#taskRiscos"),
   taskAcoesPerfil: document.querySelector("#taskAcoesPerfil"),
   arquivoRaiz: document.querySelector("#arquivoRaiz"),
+  btnRaizTitulo: document.querySelector("#btnRaizTitulo"),
+  btnRaizCorpo: document.querySelector("#btnRaizCorpo"),
+  btnRaizBold: document.querySelector("#btnRaizBold"),
+  btnRaizImagem: document.querySelector("#btnRaizImagem"),
+  raizVisualEditor: document.querySelector("#raizVisualEditor"),
   raizHint: document.querySelector("#raizHint"),
+  raizImpactAlert: document.querySelector("#raizImpactAlert"),
+  raizImpactMessage: document.querySelector("#raizImpactMessage"),
+  btnRaizImpactSignal: document.querySelector("#btnRaizImpactSignal"),
+  btnRaizImpactRevert: document.querySelector("#btnRaizImpactRevert"),
   layoutPreview: document.querySelector("#layoutPreview"),
   layoutHint: document.querySelector("#layoutHint"),
   tabBtns: document.querySelectorAll(".tab-btn"),
@@ -381,7 +435,11 @@ const els = {
   btnIrParaComentario: document.querySelector("#btnIrParaComentario"),
   btnResolverComentario: document.querySelector("#btnResolverComentario"),
   btnFecharComentario: document.querySelector("#btnFecharComentario"),
+  snackbar: document.querySelector("#snackbar"),
 };
+
+let snackbarTimeoutId = null;
+const RAIZ_PAGE_BREAK_MESSAGE = "Atenção: a alteracao na raiz causou alterações no layout";
 
 function wordsCount(text) {
   return text.trim().split(/\s+/).filter(Boolean).length;
@@ -476,7 +534,79 @@ function addNotificacao(tipo, texto) {
   renderNotificacoes();
 }
 
+function showSnackbar(message) {
+  if (!els.snackbar) return;
+  if (snackbarTimeoutId) {
+    clearTimeout(snackbarTimeoutId);
+  }
+
+  els.snackbar.textContent = message;
+  els.snackbar.classList.add("show");
+
+  snackbarTimeoutId = setTimeout(() => {
+    els.snackbar.classList.remove("show");
+  }, 2800);
+}
+
+function cloneRaizBlocks(blocks) {
+  return blocks.map((block) => ({ ...block }));
+}
+
+function captureStableRaizSnapshot() {
+  if (state.raizBlocks.length > 2) return;
+  state.raizSafeBlocksSnapshot = cloneRaizBlocks(state.raizBlocks);
+  state.raizSafeActiveBlockId = state.activeRaizBlockId;
+}
+
+function updateRaizImpactAlert() {
+  if (!els.raizImpactAlert) return;
+
+  const shouldShow = state.raizPageBreakAlertActive;
+  els.raizImpactAlert.classList.toggle("hidden", !shouldShow);
+
+  const canEditRaiz = !els.arquivoRaiz.readOnly;
+  if (els.btnRaizImpactSignal) {
+    els.btnRaizImpactSignal.disabled = !canEditRaiz;
+  }
+  if (els.btnRaizImpactRevert) {
+    els.btnRaizImpactRevert.disabled = !canEditRaiz;
+  }
+}
+
+function signalRaizImpact() {
+  if (els.arquivoRaiz.readOnly) return;
+
+  addNotificacao(
+    "emergencial",
+    "Alteracao mantida na raiz e setor responsavel sinalizado para revisar quebra de pagina no layout.",
+  );
+  showSnackbar("Setor responsavel sinalizado com sucesso.");
+  state.raizPageBreakAlertActive = false;
+  state.raizPageBreakAcknowledged = true;
+  updateRaizImpactAlert();
+}
+
+function revertRaizImpactChange() {
+  if (els.arquivoRaiz.readOnly) return;
+  if (!state.raizSafeBlocksSnapshot.length) {
+    showSnackbar("Nao ha versao estavel para reverter neste momento.");
+    return;
+  }
+
+  state.raizBlocks = cloneRaizBlocks(state.raizSafeBlocksSnapshot);
+  const hasActiveSnapshot = state.raizBlocks.some((block) => block.id === state.raizSafeActiveBlockId);
+  state.activeRaizBlockId = hasActiveSnapshot ? state.raizSafeActiveBlockId : state.raizBlocks[0]?.id || null;
+  state.raizPageBreakAlertActive = false;
+  state.raizPageBreakAcknowledged = false;
+
+  syncRaizTextoFromBlocks({ rerenderEditor: true, skipImpact: true });
+  addNotificacao("normal", "Alteracao na raiz foi revertida apos alerta de quebra de pagina.");
+  showSnackbar("Alteracao revertida para a ultima versao estavel.");
+  updateRaizImpactAlert();
+}
+
 function openScreen(screenKey) {
+  state.currentScreen = screenKey;
   els.navBtns.forEach((b) => {
     const isTaskContext = screenKey === "tarefa" && b.dataset.screen === "notificacoes";
     b.classList.toggle("active", b.dataset.screen === screenKey || isTaskContext);
@@ -486,14 +616,307 @@ function openScreen(screenKey) {
   });
 }
 
+function normalizeLayoutTab(tab) {
+  return tab === "html" ? "html" : "pre";
+}
+
+function parseRaizBlocks(texto) {
+  const lines = String(texto || "").split(/\r?\n/);
+  const blocks = [];
+  let paragraphBuffer = [];
+
+  const flushParagraph = () => {
+    if (!paragraphBuffer.length) return;
+    blocks.push({ tipo: "corpo", texto: paragraphBuffer.join(" ").trim() });
+    paragraphBuffer = [];
+  };
+
+  lines.forEach((line) => {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      flushParagraph();
+      return;
+    }
+
+    if (trimmed.startsWith("# ")) {
+      flushParagraph();
+      blocks.push({ tipo: "titulo", texto: trimmed.slice(2).trim() });
+      return;
+    }
+
+    const imageMatch = trimmed.match(/^\[imagem:\s*(.+?)\s*\]$/i);
+    if (imageMatch) {
+      flushParagraph();
+      blocks.push({ tipo: "imagem", texto: imageMatch[1].trim() || "Descrição da imagem" });
+      return;
+    }
+
+    paragraphBuffer.push(trimmed);
+  });
+
+  flushParagraph();
+  return blocks;
+}
+
+function formatInlineRaiz(text) {
+  const escaped = escapeHtml(text || "");
+  return escaped.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+}
+
+function extractBoldMarkers(text) {
+  let hasBold = false;
+  const cleaned = String(text || "").replace(/\*\*(.+?)\*\*/g, (_, content) => {
+    hasBold = true;
+    return content;
+  });
+  return { text: cleaned, bold: hasBold };
+}
+
+function hydrateRaizBlocksFromText(text) {
+  const parsed = parseRaizBlocks(text);
+  const blocks = parsed.map((block) => {
+    if (block.tipo === "imagem") {
+      return {
+        id: state.raizNextBlockId++,
+        tipo: "imagem",
+        texto: block.texto || "Descrição da imagem",
+        bold: false,
+      };
+    }
+
+    const { text: cleanedText, bold } = extractBoldMarkers(block.texto);
+    return {
+      id: state.raizNextBlockId++,
+      tipo: block.tipo,
+      texto: cleanedText || (block.tipo === "titulo" ? "Novo título" : "Novo parágrafo"),
+      bold,
+    };
+  });
+
+  if (!blocks.length) {
+    blocks.push({ id: state.raizNextBlockId++, tipo: "corpo", texto: "Novo parágrafo", bold: false });
+  }
+
+  const hasTitle = blocks.some((block) => block.tipo === "titulo");
+  if (!hasTitle) {
+    const firstBody = blocks.find((block) => block.tipo === "corpo");
+    if (firstBody) {
+      firstBody.tipo = "titulo";
+    }
+  }
+
+  return blocks;
+}
+
+function serializeRaizBlocksToText() {
+  return state.raizBlocks
+    .map((block) => {
+      const text = String(block.texto || "").trim();
+      if (!text) return "";
+
+      if (block.tipo === "imagem") {
+        return `[imagem: ${text}]`;
+      }
+
+      const content = block.bold ? `**${text}**` : text;
+      if (block.tipo === "titulo") {
+        return `# ${content}`;
+      }
+      return content;
+    })
+    .filter(Boolean)
+    .join("\n\n");
+}
+
+function getActiveRaizBlockIndex() {
+  const idx = state.raizBlocks.findIndex((block) => block.id === state.activeRaizBlockId);
+  return idx >= 0 ? idx : state.raizBlocks.length - 1;
+}
+
+function syncRaizTextoFromBlocks(options = {}) {
+  const { skipImpact = false, rerenderEditor = false } = options;
+  state.raizTexto = serializeRaizBlocksToText();
+  if (els.arquivoRaiz) {
+    els.arquivoRaiz.value = state.raizTexto;
+  }
+
+  if (rerenderEditor) {
+    renderRaizVisualEditor();
+  }
+
+  renderPreview();
+  captureStableRaizSnapshot();
+  if (!skipImpact) {
+    evaluateSubstantialChange(state.raizTexto);
+  } else {
+    updateRaizImpactAlert();
+  }
+}
+
+function renderRaizVisualEditor() {
+  if (!els.raizVisualEditor) return;
+
+  els.raizVisualEditor.innerHTML = state.raizBlocks
+    .map((block, index) => {
+      const activeClass = block.id === state.activeRaizBlockId ? "active" : "";
+      const boldClass = block.bold ? "block-bold" : "";
+      const typeLabel = block.tipo === "titulo" ? "Título" : block.tipo === "imagem" ? "Box de imagem" : "Corpo";
+
+      return `
+        <article class="raiz-block ${activeClass}" data-block-id="${block.id}">
+          <header class="raiz-block-head">
+            <span class="raiz-block-index">${index + 1}</span>
+            <select class="raiz-block-type" data-role="type">
+              <option value="titulo" ${block.tipo === "titulo" ? "selected" : ""}>Título</option>
+              <option value="corpo" ${block.tipo === "corpo" ? "selected" : ""}>Corpo</option>
+              <option value="imagem" ${block.tipo === "imagem" ? "selected" : ""}>Box de imagem</option>
+            </select>
+            <span class="raiz-block-kind">${typeLabel}</span>
+            <button type="button" class="mini-btn" data-action="up" aria-label="Mover bloco para cima">↑</button>
+            <button type="button" class="mini-btn" data-action="down" aria-label="Mover bloco para baixo">↓</button>
+            <button type="button" class="mini-btn" data-action="remove" aria-label="Excluir bloco">Excluir</button>
+          </header>
+          ${block.tipo === "imagem"
+            ? `<input class="raiz-block-input" data-role="text" type="text" value="${escapeHtml(block.texto)}" placeholder="Descreva o box de imagem" />`
+            : `<div class="raiz-block-input ${boldClass}" data-role="text" contenteditable="true" spellcheck="true">${escapeHtml(block.texto)}</div>`}
+        </article>
+      `;
+    })
+    .join("");
+
+  const canEdit = !els.arquivoRaiz.readOnly;
+  els.raizVisualEditor.querySelectorAll(".raiz-block-input[contenteditable]").forEach((node) => {
+    node.setAttribute("contenteditable", String(canEdit));
+  });
+  els.raizVisualEditor.querySelectorAll("input, select, button").forEach((node) => {
+    node.disabled = !canEdit;
+  });
+  paintActiveRaizBlock();
+}
+
+function paintActiveRaizBlock() {
+  if (!els.raizVisualEditor) return;
+  els.raizVisualEditor.querySelectorAll(".raiz-block").forEach((node) => {
+    const blockId = Number(node.dataset.blockId);
+    node.classList.toggle("active", blockId === state.activeRaizBlockId);
+  });
+}
+
+function syncRaizFromTextarea() {
+  state.raizBlocks = hydrateRaizBlocksFromText(els.arquivoRaiz.value);
+  state.activeRaizBlockId = state.raizBlocks[0]?.id || null;
+  syncRaizTextoFromBlocks({ rerenderEditor: true });
+}
+
+function addRaizBlock(tipo) {
+  if (els.arquivoRaiz.readOnly) return;
+  const newBlock = {
+    id: state.raizNextBlockId++,
+    tipo,
+    texto: tipo === "titulo" ? "Novo título" : tipo === "imagem" ? "Descreva a imagem esperada" : "Novo parágrafo do conteúdo.",
+    bold: false,
+  };
+
+  const index = getActiveRaizBlockIndex();
+  state.raizBlocks.splice(index + 1, 0, newBlock);
+  state.activeRaizBlockId = newBlock.id;
+  syncRaizTextoFromBlocks({ rerenderEditor: true });
+}
+
+function applyRaizBold() {
+  if (els.arquivoRaiz.readOnly) return;
+  const idx = getActiveRaizBlockIndex();
+  const block = state.raizBlocks[idx];
+
+  if (!block || block.tipo === "imagem") {
+    showSnackbar("Selecione um bloco de texto para aplicar negrito.");
+    return;
+  }
+
+  block.bold = !block.bold;
+  syncRaizTextoFromBlocks({ rerenderEditor: true });
+}
+
+function moveRaizBlock(blockId, direction) {
+  const index = state.raizBlocks.findIndex((block) => block.id === blockId);
+  if (index < 0) return;
+  const target = index + direction;
+  if (target < 0 || target >= state.raizBlocks.length) return;
+  const [block] = state.raizBlocks.splice(index, 1);
+  state.raizBlocks.splice(target, 0, block);
+  state.activeRaizBlockId = block.id;
+  syncRaizTextoFromBlocks({ rerenderEditor: true });
+}
+
+function removeRaizBlock(blockId) {
+  if (state.raizBlocks.length <= 1) {
+    showSnackbar("O documento precisa ter pelo menos um bloco.");
+    return;
+  }
+  state.raizBlocks = state.raizBlocks.filter((block) => block.id !== blockId);
+  state.activeRaizBlockId = state.raizBlocks[0]?.id || null;
+  syncRaizTextoFromBlocks({ rerenderEditor: true });
+}
+
 function statusBadgeClass(status) {
   const statusClass = {
+    Atrasado: "danger",
     "Em andamento": "success",
     Bloqueado: "danger",
     "Aguardando aprovação": "warning",
     "Concluído": "alert",
   };
   return statusClass[status] || "";
+}
+
+function isTaskOverdue(task) {
+  const hoje = "2026-06-02";
+  return task.prazo < hoje && task.status !== "Concluído";
+}
+
+function hasRaizImpact(task) {
+  const texto = `${task.bloqueio || ""} ${(task.riscos || []).join(" ")}`.toLowerCase();
+  return texto.includes("raiz");
+}
+
+function hasActiveBlocking(task) {
+  return task.status === "Bloqueado" || !String(task.bloqueio || "").toLowerCase().includes("sem bloqueio");
+}
+
+function clearQuickFilters() {
+  state.quickFilter = "";
+}
+
+function applyDashboardAction(action) {
+  if (action === "comentarios") {
+    showSnackbar("Acesse notificações pelo botão do sininho no topo.");
+    return;
+  }
+
+  openScreen("geral");
+  clearQuickFilters();
+
+  if (action === "atrasadas") {
+    els.filtroStatus.value = "Atrasado";
+  } else if (action === "bloqueios") {
+    state.quickFilter = "bloqueio-ativo";
+    els.filtroStatus.value = "";
+    setGeralView("operacional");
+  } else if (action === "impactos") {
+    state.quickFilter = "impacto-raiz";
+    els.filtroStatus.value = "";
+    setGeralView("operacional");
+  }
+
+  renderTabela();
+  renderDashboardGeral();
+}
+
+function normalizeEtapa(etapa) {
+  return (etapa || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
 }
 
 function getTaskById(taskId) {
@@ -504,18 +927,78 @@ function getTaskByDisciplinaEtapa(disciplina, etapa) {
   return state.tarefasProjeto.find((t) => t.disciplina === disciplina && t.etapa === etapa);
 }
 
-function renderKpis(itensFiltrados = state.itens) {
-  const atrasados = itensFiltrados.filter((i) => i.prazo < "2026-06-02").length;
-  const bloqueados = itensFiltrados.filter((i) => i.status === "Bloqueado").length;
-  const emergenciais = state.notificacoes.filter((n) => n.tipo === "emergencial").length;
-  const liberados = itensFiltrados.filter((i) => i.parteLiberada).length;
+function renderKpis(tarefasFiltradas = state.tarefasProjeto) {
+  const hoje = "2026-06-02";
+  const emAndamento = tarefasFiltradas.filter((t) => t.status === "Em andamento").length;
+  const bloqueados = tarefasFiltradas.filter((t) => t.status === "Bloqueado").length;
+  const atrasados = tarefasFiltradas.filter((t) => t.prazo < hoje && t.status !== "Concluído").length;
+  const alertas = tarefasFiltradas.reduce((acc, t) => acc + (Number(t.alertasEmergenciais) || 0), 0);
 
   els.kpis.innerHTML = `
-    <div class="kpi"><small>Partes liberadas</small><strong>${liberados}</strong></div>
+    <div class="kpi"><small>Em andamento</small><strong>${emAndamento}</strong></div>
     <div class="kpi"><small>Atrasados</small><strong>${atrasados}</strong></div>
     <div class="kpi"><small>Bloqueios</small><strong>${bloqueados}</strong></div>
-    <div class="kpi"><small>Alertas emergenciais</small><strong>${emergenciais}</strong></div>
+    <div class="kpi"><small>Alertas emergenciais</small><strong>${alertas}</strong></div>
   `;
+}
+
+function renderDashboardGeral() {
+  if (!els.dashAtrasadas || !els.fluxoEtapas) return;
+
+  const tarefasFiltradas = getTarefasFiltradas();
+  const tarefasAtrasadas = tarefasFiltradas.filter((t) => isTaskOverdue(t)).length;
+  const bloqueiosAtivos = tarefasFiltradas.filter((t) => hasActiveBlocking(t)).length;
+  const comentariosAbertos = state.comentarios.filter((c) => !c.resolvido).length;
+  const impactosLayout = tarefasFiltradas.filter((t) => hasRaizImpact(t)).length;
+
+  els.dashAtrasadas.textContent = String(tarefasAtrasadas);
+  els.dashBloqueios.textContent = String(bloqueiosAtivos);
+  els.dashComentarios.textContent = String(comentariosAbertos);
+  els.dashImpactos.textContent = String(impactosLayout);
+
+  if (els.fluxoResumo) {
+    els.fluxoResumo.textContent = `${tarefasFiltradas.length} tarefa(s) encontradas, ${tarefasAtrasadas} atrasada(s), ${bloqueiosAtivos} com bloqueio ativo.`;
+  }
+  if (els.operacionalResumo) {
+    els.operacionalResumo.textContent = `${tarefasFiltradas.length} tarefa(s) no detalhamento operacional com os filtros atuais.`;
+  }
+  if (els.filtrosHint) {
+    let quick = "";
+    if (state.quickFilter === "impacto-raiz") {
+      quick = "Filtro rápido ativo: impactos de layout por edição de raiz.";
+    } else if (state.quickFilter === "bloqueio-ativo") {
+      quick = "Filtro rápido ativo: tarefas com bloqueio/dependência ativa.";
+    }
+    els.filtrosHint.textContent = quick || "Os filtros abaixo afetam os dois modos de visualização.";
+  }
+
+  els.fluxoEtapas.innerHTML = state.fluxosEditoriais
+    .map((etapaNome) => {
+      const etapaNorm = normalizeEtapa(etapaNome);
+      const totalEtapa = tarefasFiltradas.filter((t) => normalizeEtapa(t.etapa) === etapaNorm).length;
+      const concluidasEtapa = tarefasFiltradas.filter(
+        (t) => normalizeEtapa(t.etapa) === etapaNorm && t.status === "Concluído",
+      ).length;
+
+      return `
+        <article class="etapa-item">
+          <div class="etapa-top">
+            <strong>${etapaNome}</strong>
+            <span class="badge">${concluidasEtapa}/${totalEtapa || 0}</span>
+          </div>
+          <small class="etapa-meta">${totalEtapa || 0} tarefa(s) vinculada(s)</small>
+          <div class="etapa-placeholder" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <p class="etapa-hint">Espaço reservado para subitens em formato sanfona.</p>
+        </article>
+      `;
+    })
+    .join("");
+
+  updateFluxoScrollControls();
 }
 
 function getItensFiltrados() {
@@ -523,59 +1006,198 @@ function getItensFiltrados() {
   const equipe = els.filtroEquipe.value;
   const status = els.filtroStatus.value;
   const prioridade = els.filtroPrioridade.value;
+  const selo = els.filtroSelo.value;
+  const segmento = els.filtroSegmento.value;
 
   return state.itens.filter((item) => {
     if (busca && !item.projeto.toLowerCase().includes(busca)) return false;
     if (equipe && item.equipe !== equipe) return false;
     if (status && item.status !== status) return false;
     if (prioridade && item.prioridade !== prioridade) return false;
+    if (selo && item.selo !== selo) return false;
+    if (segmento && item.segmento !== segmento) return false;
     return true;
   });
 }
 
-function renderTabela() {
-  const itens = getItensFiltrados();
-  renderKpis(itens);
+function getTarefasFiltradas() {
+  const busca = els.filtroBusca.value.toLowerCase().trim();
+  const equipe = els.filtroEquipe.value;
+  const status = els.filtroStatus.value;
+  const prioridade = els.filtroPrioridade.value;
+  const selo = els.filtroSelo.value;
+  const segmento = els.filtroSegmento.value;
 
-  els.tabelaItens.innerHTML = itens
-    .map(
-      (i) => `
+  return state.tarefasProjeto.filter((task) => {
+    const alvoBusca = `${task.projeto} ${task.disciplina} ${task.titulo} ${task.selo} ${task.segmento}`.toLowerCase();
+    if (busca && !alvoBusca.includes(busca)) return false;
+    if (equipe && task.equipe !== equipe) return false;
+    if (status === "Atrasado" && !isTaskOverdue(task)) return false;
+    if (status && status !== "Atrasado" && task.status !== status) return false;
+    if (prioridade && task.prioridade !== prioridade) return false;
+    if (selo && task.selo !== selo) return false;
+    if (segmento && task.segmento !== segmento) return false;
+    if (state.quickFilter === "bloqueio-ativo" && !hasActiveBlocking(task)) return false;
+    if (state.quickFilter === "impacto-raiz" && !hasRaizImpact(task)) return false;
+    return true;
+  });
+}
+
+function setGeralView(viewKey) {
+  state.geralView = viewKey;
+  const fluxoAtivo = viewKey === "fluxo";
+
+  els.viewFluxo.classList.toggle("active", fluxoAtivo);
+  els.viewOperacional.classList.toggle("active", !fluxoAtivo);
+  els.viewFluxo.setAttribute("aria-hidden", String(!fluxoAtivo));
+  els.viewOperacional.setAttribute("aria-hidden", String(fluxoAtivo));
+
+  els.viewTabs.forEach((btn) => {
+    const ativo = btn.dataset.view === viewKey;
+    btn.classList.toggle("active", ativo);
+    btn.setAttribute("aria-selected", String(ativo));
+  });
+
+  updateFluxoScrollControls();
+}
+
+function updateFluxoScrollControls() {
+  if (!els.fluxoScroll || !els.fluxoScrollPrev || !els.fluxoScrollNext) return;
+
+  const canScroll = els.fluxoScroll.scrollWidth > els.fluxoScroll.clientWidth + 2;
+  const atStart = els.fluxoScroll.scrollLeft <= 2;
+  const atEnd = els.fluxoScroll.scrollLeft + els.fluxoScroll.clientWidth >= els.fluxoScroll.scrollWidth - 2;
+
+  els.fluxoScrollPrev.disabled = !canScroll || atStart;
+  els.fluxoScrollNext.disabled = !canScroll || atEnd;
+}
+
+function scrollFluxoEtapas(direction) {
+  if (!els.fluxoScroll) return;
+  const step = Math.max(220, Math.round(els.fluxoScroll.clientWidth * 0.8));
+  els.fluxoScroll.scrollBy({ left: step * direction, behavior: "smooth" });
+}
+
+function renderTabela() {
+  const tarefas = getTarefasFiltradas();
+  renderKpis(tarefas);
+
+  if (!tarefas.length) {
+    els.tabelaItens.innerHTML = `
       <tr>
-        <td>${i.projeto}</td>
-        <td>${i.equipe}</td>
-        <td><span class="badge ${statusBadgeClass(i.status)}">${i.status}</span></td>
-        <td>${i.prazo}</td>
-        <td>${i.parteLiberada ? "Sim" : "Nao"}</td>
+        <td colspan="8" class="empty-row">Nenhuma tarefa encontrada para os filtros selecionados.</td>
+      </tr>
+    `;
+    return;
+  }
+
+  els.tabelaItens.innerHTML = tarefas
+    .map(
+      (t) => {
+        const statusVisual = isTaskOverdue(t) ? "Atrasado" : t.status;
+        const mostrarTagBloqueio = hasActiveBlocking(t) && statusVisual !== "Bloqueado";
+
+        return `
+      <tr>
+        <td>${t.titulo}</td>
+        <td>${t.equipe}</td>
         <td>
-          <button class="mini-btn" onclick="abrirEdicao('${i.projeto.replace(/'/g, "")}')">Abrir edicao</button>
+          <div class="status-badges">
+            <span class="badge ${statusBadgeClass(statusVisual)}">${statusVisual}</span>
+            ${mostrarTagBloqueio ? '<span class="badge warning">Com bloqueio</span>' : ""}
+          </div>
+        </td>
+        <td>${t.prazo}</td>
+        <td>${t.etapa}</td>
+        <td>${t.selo || "-"}</td>
+        <td>${t.segmento || "-"}</td>
+        <td>
+          <button class="mini-btn" onclick="abrirTarefa('${t.id}')">Abrir tarefa</button>
         </td>
       </tr>
-    `,
+    `;
+      },
     )
     .join("");
 }
 
 function renderNotificacoes() {
-  const lista = state.notificacoes.filter((n) => {
-    if (state.notifFilter === "all") return true;
-    return n.tipo === state.notifFilter;
+  const isGestorArte = state.perfil === "admin";
+  const isDiagramador = state.perfil === "diagramador";
+
+  let comentarios = state.comentarios.filter((c) => {
+    if (isGestorArte) {
+      return c.equipe === "Diagramação";
+    }
+
+    if (isDiagramador) {
+      return c.equipe === "Diagramação" && ensureThread(c).length > 1;
+    }
+
+    return c.equipe === "Editorial";
   });
 
-  els.listaNotificacoes.innerHTML = lista
-    .map(
-      (n) => `
-      <li class="${n.tipo}">
-        <strong>${n.tipo === "emergencial" ? "Emergencial" : "Notificacao"}</strong>
-        <p>${n.texto}</p>
-        <small>${n.quando}</small>
-      </li>
-    `,
-    )
+  if (state.notifFilter === "normal") {
+    comentarios = comentarios.filter((c) => c.prioridade !== "Emergencial");
+  } else if (state.notifFilter === "emergencial") {
+    comentarios = comentarios.filter((c) => c.prioridade === "Emergencial");
+  }
+
+  comentarios.sort((a, b) => b.id - a.id);
+
+  const grouped = comentarios.reduce((acc, c) => {
+    const projeto = c.projeto || state.estruturaProjeto.projeto;
+    if (!acc[projeto]) acc[projeto] = [];
+    acc[projeto].push(c);
+    return acc;
+  }, {});
+
+  const html = Object.entries(grouped)
+    .map(([projeto, itens]) => {
+      const cards = itens
+        .map(
+          (c) => `
+          <li class="${c.prioridade === "Emergencial" ? "emergencial" : ""}">
+            <button type="button" class="notif-item" data-comment-id="${c.id}" aria-label="Abrir comentário ${c.id} no material">
+              <strong>${c.prioridade === "Emergencial" ? "Comentário emergencial" : "Comentário"}</strong>
+              <p>${c.texto}</p>
+              <small>${c.equipe} - ${c.alvo} - ${c.quando}</small>
+            </button>
+          </li>
+        `,
+        )
+        .join("");
+
+      return `<li class="notif-group-title">Projeto ${projeto}</li>${cards}`;
+    })
     .join("");
 
-  const totalEmergenciais = state.notificacoes.filter((n) => n.tipo === "emergencial").length;
-  els.resumoEmergenciais.textContent = String(totalEmergenciais);
-  els.resumoNormais.textContent = String(state.notificacoes.length - totalEmergenciais);
+  els.listaNotificacoes.innerHTML = html || '<li><p>Nenhuma notificação para os filtros e perfil atual.</p></li>';
+
+  const basePerfil = state.comentarios.filter((c) => {
+    if (isGestorArte) return c.equipe === "Diagramação";
+    if (isDiagramador) return c.equipe === "Diagramação" && ensureThread(c).length > 1;
+    return c.equipe === "Editorial";
+  });
+  if (els.notificacoesSubtitulo) {
+    if (isGestorArte) {
+      els.notificacoesSubtitulo.textContent = "Gestão de arte: comentários da equipe de Diagramação, segmentados por projeto.";
+    } else if (isDiagramador) {
+      els.notificacoesSubtitulo.textContent = "Diagramador: apenas comentários com atualização de thread nos seus projetos.";
+    } else {
+      els.notificacoesSubtitulo.textContent = "Editorial: comentários vinculados à equipe Editorial, segmentados por projeto.";
+    }
+  }
+}
+
+function openComentarioViaNotificacao(commentId) {
+  const comment = state.comentarios.find((c) => c.id === commentId);
+  if (!comment) return;
+
+  closeComentarioModal();
+  setStampMode(false);
+  openScreen("edicao");
+  goToComment(commentId);
 }
 
 function etapasPorPerfil() {
@@ -603,6 +1225,8 @@ function etapasPorPerfil() {
 }
 
 function renderEstruturaProjeto() {
+  if (!els.estruturaProjeto) return;
+
   const etapas = etapasPorPerfil();
   const disciplinaPreferencial = state.perfil === "diagramador" ? "MAT" : null;
 
@@ -676,6 +1300,10 @@ function renderTaskDetail(taskId) {
   const task = getTaskById(taskId);
   if (!task) return;
 
+  if (state.currentScreen !== "tarefa") {
+    state.lastScreenBeforeTask = state.currentScreen || "geral";
+  }
+
   state.currentTaskId = taskId;
   els.tarefaBreadcrumb.textContent = `${task.projeto} > ${task.disciplina} > ${task.etapa}`;
   els.tarefaTitulo.textContent = task.titulo;
@@ -704,13 +1332,65 @@ function renderTaskDetail(taskId) {
 }
 
 function renderPreview() {
-  const blocos = state.raizTexto
-    .split("\n\n")
-    .map((b) => b.trim())
-    .filter(Boolean);
-  const titulo = blocos[0] || "Capitulo";
-  const corpo = blocos[1] || state.raizTexto;
-  const resumo = corpo.slice(0, 170);
+  const blocks = state.raizBlocks.length ? state.raizBlocks : hydrateRaizBlocksFromText(state.raizTexto);
+  const tituloBlock = blocks.find((b) => b.tipo === "titulo");
+  const corpoBlocks = blocks.filter((b) => b.tipo === "corpo");
+  const imagemBlocks = blocks.filter((b) => b.tipo === "imagem");
+
+  const titulo = tituloBlock?.texto || corpoBlocks[0]?.texto || "Capitulo";
+  const corpoCompleto = corpoBlocks.map((b) => b.texto).join(" ").trim() || state.raizTexto;
+  const resumo = (corpoCompleto || "").slice(0, 170);
+  const resumoTemBold = Boolean(corpoBlocks[0]?.bold);
+  const resumoHtml = resumoTemBold ? `<strong>${escapeHtml(resumo || "Texto em edição.")}</strong>` : formatInlineRaiz(resumo || "Texto em edição.");
+  const tituloRender = tituloBlock?.bold ? `<strong>${escapeHtml(titulo)}</strong>` : escapeHtml(titulo);
+
+  let corpoIndexVisual = 0;
+  const preLayoutFlow = blocks
+    .map((block) => {
+      if (block.tipo === "titulo") {
+        return `
+          <h2 class="pre-doc-heading ${corpoIndexVisual === 0 ? "lead" : "section"}">${block.bold ? `<strong>${escapeHtml(block.texto)}</strong>` : escapeHtml(block.texto)}</h2>
+        `;
+      }
+
+      if (block.tipo === "imagem") {
+        return `
+          <article class="pre-doc-image-card" aria-label="Box de imagem">
+            <span class="material-symbols-rounded" aria-hidden="true">menu_book</span>
+            <div>
+              <strong>Mock Imagem: ${escapeHtml(block.texto)}</strong>
+              <small>Aprovado</small>
+            </div>
+          </article>
+        `;
+      }
+
+      const isFirstBody = corpoIndexVisual === 0;
+      corpoIndexVisual += 1;
+      const content = block.bold ? `<strong>${escapeHtml(block.texto)}</strong>` : formatInlineRaiz(block.texto);
+      return `
+        <p class="pre-doc-paragraph ${isFirstBody ? "dropcap" : ""}">${content}</p>
+      `;
+    })
+    .join("");
+
+  const imagemBoxes = imagemBlocks.length
+    ? imagemBlocks
+      .map(
+        (img, idx) => `
+          <div class="raiz-image-box" aria-label="Box de imagem ${idx + 1}">
+            <span>Imagem ${idx + 1}</span>
+            <strong>${escapeHtml(img.texto)}</strong>
+          </div>
+        `,
+      )
+      .join("")
+    : `
+      <div class="raiz-image-box muted" aria-label="Box de imagem sugerido">
+        <span>Imagem sugerida</span>
+        <strong>Use [imagem: descricao] no arquivo raiz para reservar boxes no layout.</strong>
+      </div>
+    `;
 
   if (state.layoutTab === "html") {
     els.layoutPreview.innerHTML = `
@@ -723,12 +1403,13 @@ function renderPreview() {
         </div>
         <div class="html-frame">
           <span class="html-chip">article.lesson</span>
-          <h1>${titulo}</h1>
-          <p>${resumo}...</p>
+          <h1>${tituloRender}</h1>
+          <p>${resumoHtml}...</p>
           <div class="html-callout">
             <strong>Box multimidia</strong>
             <p>Componente reaproveitado para versao digital com destaque e navegacao lateral.</p>
           </div>
+          <div class="raiz-image-list">${imagemBoxes}</div>
           <div class="html-meta">
             <span>leitura guiada</span>
             <span>glossario</span>
@@ -746,8 +1427,8 @@ function renderPreview() {
         </div>
         <div class="diag-columns">
           <section>
-            <h1>${titulo}</h1>
-            <p class="lead">${resumo}...</p>
+            <h1>${tituloRender}</h1>
+            <p class="lead">${resumoHtml}...</p>
             <div class="figure-card">
               <div class="figure-thumb"></div>
               <div>
@@ -755,6 +1436,7 @@ function renderPreview() {
                 <p>Legenda diagramada com hierarquia visual e area para observacoes do time.</p>
               </div>
             </div>
+            <div class="raiz-image-list">${imagemBoxes}</div>
           </section>
           <aside>
             <div class="side-note">
@@ -774,35 +1456,13 @@ function renderPreview() {
     `;
   } else {
     els.layoutPreview.innerHTML = `
-      <article class="layout-sheet pre-sheet">
-        <div class="pre-topbar">
-          <small>visao pre-diagramacao</small>
-          <div class="pre-tools">
-            <span class="badge">texto raiz</span>
-            <span class="badge alert">layout espelhado</span>
-          </div>
+      <article class="layout-sheet pre-sheet editorial-preview">
+        <div class="pre-doc-head">
+          <small>SEÇÃO: ABERTURA</small>
+          <small>PÁGINA 2</small>
         </div>
-        <div class="hero-block">
-          <div>
-            <small class="eyebrow">capitulo em desenvolvimento</small>
-            <h1>${titulo}</h1>
-            <p>${corpo}</p>
-          </div>
-          <div class="hero-preview-card">
-            <div class="hero-lines"></div>
-            <div class="hero-lines short"></div>
-            <div class="hero-chip">imagem + chamada</div>
-          </div>
-        </div>
-        <div class="content-rail">
-          <div class="text-card">
-            <strong>Bloco principal</strong>
-            <p>${resumo}...</p>
-          </div>
-          <div class="text-card muted-card">
-            <strong>Observação de layout</strong>
-            <p>Previsão de box lateral, chamada e legenda técnica aplicada ao template.</p>
-          </div>
+        <div class="pre-doc-body">
+          ${preLayoutFlow}
         </div>
       </article>
     `;
@@ -843,8 +1503,11 @@ function applyPermissions() {
   const canEditLayout = perfil === "diagramador";
 
   els.arquivoRaiz.readOnly = !canEditRaiz;
+  [els.btnRaizTitulo, els.btnRaizCorpo, els.btnRaizBold, els.btnRaizImagem].forEach((btn) => {
+    if (btn) btn.disabled = !canEditRaiz;
+  });
   els.raizHint.textContent = canEditRaiz
-    ? "Voce pode editar o arquivo raiz. Mudancas atualizam o layout." 
+    ? "Edite em blocos como no Word: escolha o tipo (titulo, corpo ou box de imagem) e veja o pre-layout responder em tempo real."
     : "Somente leitura: este perfil nao pode editar o arquivo raiz.";
 
   els.layoutHint.textContent = canEditLayout
@@ -853,7 +1516,9 @@ function applyPermissions() {
 
   renderEstruturaProjeto();
   renderComentarios();
+  renderRaizVisualEditor();
   renderPreview();
+  updateRaizImpactAlert();
 }
 
 function renderComentarios() {
@@ -903,6 +1568,7 @@ function renderComentarios() {
     .join("");
 
   renderCommentOverview();
+  renderDashboardGeral();
 }
 
 function toggleCommentHistory(commentId) {
@@ -913,7 +1579,7 @@ function toggleCommentHistory(commentId) {
 function renderLayoutStamps() {
   els.layoutPreview.querySelectorAll(".layout-stamp").forEach((n) => n.remove());
   const stamps = getVisibleComentarios().filter(
-    (c) => c.anchor?.tipo === "layout" && c.anchor.tab === state.layoutTab && !c.resolvido,
+    (c) => c.anchor?.tipo === "layout" && normalizeLayoutTab(c.anchor.tab) === state.layoutTab && !c.resolvido,
   );
 
   stamps.forEach((c, idx) => {
@@ -953,6 +1619,10 @@ function closeComentarioModal() {
 }
 
 function renderCommentOverview() {
+  if (!els.comentariosVisiveis || !els.comentariosTotais || !els.comentariosEmergenciais || !els.commentMap || !els.visaoPerfilHint) {
+    return;
+  }
+
   const visiveis = getVisibleComentarios();
   const emergenciais = visiveis.filter((c) => c.prioridade === "Emergencial").length;
 
@@ -1082,6 +1752,7 @@ function resolveActiveComment() {
   renderComentarios();
   renderPreview();
   openCommentDetail(comment.id);
+  showSnackbar("Comentário resolvido com sucesso.");
 }
 
 function returnActiveCommentToArea() {
@@ -1112,6 +1783,7 @@ function returnActiveCommentToArea() {
   renderComentarios();
   renderPreview();
   closeCommentDetail();
+  showSnackbar(`Comentário devolvido para ${novaEquipe}.`);
 }
 
 function highlightTarget(node) {
@@ -1123,7 +1795,7 @@ function goToComment(commentId) {
   const comment = getVisibleComentarios().find((c) => c.id === commentId);
   if (!comment) return;
 
-  state.layoutTab = comment.anchor.tab;
+  state.layoutTab = normalizeLayoutTab(comment.anchor.tab);
   els.tabBtns.forEach((b) => b.classList.toggle("active", b.dataset.layoutTab === state.layoutTab));
   renderPreview();
   const marker = els.layoutPreview.querySelector(`[data-comment-id=\"${commentId}\"]`);
@@ -1137,12 +1809,12 @@ function saveComentario(forceEmergencial = false) {
   const prioridade = forceEmergencial ? "Emergencial" : els.comentarioPrioridade.value;
 
   if (!texto || !equipe) {
-    alert("Comentario e atribuicao de equipe sao obrigatorios.");
+    showSnackbar("Comentário e atribuição de equipe são obrigatórios.");
     return false;
   }
 
   if (!state.pendingAnchor) {
-    alert("Escolha primeiro um alvo no layout.");
+    showSnackbar("Escolha primeiro um alvo no layout.");
     return false;
   }
 
@@ -1185,10 +1857,29 @@ function saveComentario(forceEmergencial = false) {
 
   closeComentarioModal();
   setStampMode(false);
+  showSnackbar(prioridade === "Emergencial" ? "Comentário emergencial enviado." : "Comentário salvo e enviado para a equipe.");
   return true;
 }
 
 function evaluateSubstantialChange(newText) {
+  const hasPageBreakImpact = state.raizBlocks.length > 2;
+
+  if (hasPageBreakImpact && !state.raizPageBreakAlertActive && !state.raizPageBreakAcknowledged) {
+    addNotificacao("emergencial", RAIZ_PAGE_BREAK_MESSAGE);
+    showSnackbar(RAIZ_PAGE_BREAK_MESSAGE);
+    state.raizPageBreakAlertActive = true;
+  }
+
+  if (!hasPageBreakImpact) {
+    state.raizPageBreakAlertActive = false;
+    state.raizPageBreakAcknowledged = false;
+  }
+
+  if (els.raizImpactMessage) {
+    els.raizImpactMessage.textContent = RAIZ_PAGE_BREAK_MESSAGE;
+  }
+  updateRaizImpactAlert();
+
   const baseline = state.raizBaselineWords || wordsCount(newText);
   const now = wordsCount(newText);
   const delta = Math.abs(now - baseline) / Math.max(baseline, 1);
@@ -1209,9 +1900,20 @@ function abrirEdicao(projeto) {
 
 window.abrirEdicao = abrirEdicao;
 
+function abrirTarefa(taskId) {
+  renderTaskDetail(Number(taskId));
+}
+
+window.abrirTarefa = abrirTarefa;
+
 function init() {
   state.raizBaselineWords = wordsCount(state.raizTexto);
+  state.layoutTab = normalizeLayoutTab(state.layoutTab);
+  state.raizBlocks = hydrateRaizBlocksFromText(state.raizTexto);
+  state.activeRaizBlockId = state.raizBlocks[0]?.id || null;
+  captureStableRaizSnapshot();
   els.arquivoRaiz.value = state.raizTexto;
+  renderRaizVisualEditor();
 
   els.navBtns.forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -1219,12 +1921,22 @@ function init() {
     });
   });
 
-  els.btnAbrirNotificacoes.addEventListener("click", () => {
-    openScreen("notificacoes");
+  if (els.btnBellNotificacoes) {
+    els.btnBellNotificacoes.addEventListener("click", () => {
+      state.notifFilter = "all";
+      els.notifBtns.forEach((btn) => btn.classList.toggle("active", btn.dataset.notifFilter === "all"));
+      openScreen("notificacoes");
+      renderNotificacoes();
+    });
+  }
+
+  els.btnExportarRelatorio.addEventListener("click", () => {
+    addNotificacao("normal", "Exportação de relatório solicitada no painel de inteligência editorial.");
+    showSnackbar("Exportação iniciada. Você receberá atualização nas notificações.");
   });
 
   els.btnVoltarNotificacoes.addEventListener("click", () => {
-    openScreen("notificacoes");
+    openScreen(state.lastScreenBeforeTask || "geral");
   });
 
   els.perfil.addEventListener("change", (e) => {
@@ -1232,9 +1944,39 @@ function init() {
     applyPermissions();
   });
 
-  [els.filtroBusca, els.filtroEquipe, els.filtroStatus, els.filtroPrioridade].forEach((f) =>
-    f.addEventListener("input", renderTabela),
+  [els.filtroBusca, els.filtroEquipe, els.filtroStatus, els.filtroPrioridade, els.filtroSelo, els.filtroSegmento].forEach((f) =>
+    f.addEventListener("input", () => {
+      if (state.quickFilter === "impacto-raiz") {
+        state.quickFilter = "";
+      }
+      renderTabela();
+      renderDashboardGeral();
+    }),
   );
+
+  els.dashCards.forEach((card) => {
+    const action = card.dataset.dashAction;
+    card.addEventListener("click", () => applyDashboardAction(action));
+    card.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        applyDashboardAction(action);
+      }
+    });
+  });
+
+  els.viewTabs.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      setGeralView(btn.dataset.view);
+    });
+  });
+
+  if (els.fluxoScrollPrev && els.fluxoScrollNext && els.fluxoScroll) {
+    els.fluxoScrollPrev.addEventListener("click", () => scrollFluxoEtapas(-1));
+    els.fluxoScrollNext.addEventListener("click", () => scrollFluxoEtapas(1));
+    els.fluxoScroll.addEventListener("scroll", updateFluxoScrollControls, { passive: true });
+    window.addEventListener("resize", updateFluxoScrollControls);
+  }
 
   els.notifBtns.forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -1245,26 +1987,117 @@ function init() {
     });
   });
 
-  els.estruturaProjeto.addEventListener("click", (e) => {
-    const btn = e.target.closest(".task-link");
+  els.listaNotificacoes.addEventListener("click", (e) => {
+    const btn = e.target.closest(".notif-item");
     if (!btn) return;
-    renderTaskDetail(Number(btn.dataset.taskId));
+    openComentarioViaNotificacao(Number(btn.dataset.commentId));
   });
+
+  if (els.estruturaProjeto) {
+    els.estruturaProjeto.addEventListener("click", (e) => {
+      const btn = e.target.closest(".task-link");
+      if (!btn) return;
+      renderTaskDetail(Number(btn.dataset.taskId));
+    });
+  }
 
   els.tabBtns.forEach((btn) => {
     btn.addEventListener("click", () => {
       els.tabBtns.forEach((b) => b.classList.remove("active"));
       btn.classList.add("active");
-      state.layoutTab = btn.dataset.layoutTab;
+      state.layoutTab = normalizeLayoutTab(btn.dataset.layoutTab);
       renderPreview();
     });
   });
 
   els.arquivoRaiz.addEventListener("input", (e) => {
-    state.raizTexto = e.target.value;
-    renderPreview();
-    evaluateSubstantialChange(state.raizTexto);
+    syncRaizFromTextarea();
   });
+
+  if (els.btnRaizTitulo) {
+    els.btnRaizTitulo.addEventListener("click", () => {
+      addRaizBlock("titulo");
+    });
+  }
+
+  if (els.btnRaizCorpo) {
+    els.btnRaizCorpo.addEventListener("click", () => {
+      addRaizBlock("corpo");
+    });
+  }
+
+  if (els.btnRaizBold) {
+    els.btnRaizBold.addEventListener("click", applyRaizBold);
+  }
+
+  if (els.btnRaizImagem) {
+    els.btnRaizImagem.addEventListener("click", () => {
+      addRaizBlock("imagem");
+    });
+  }
+
+  if (els.btnRaizImpactSignal) {
+    els.btnRaizImpactSignal.addEventListener("click", signalRaizImpact);
+  }
+
+  if (els.btnRaizImpactRevert) {
+    els.btnRaizImpactRevert.addEventListener("click", revertRaizImpactChange);
+  }
+
+  if (els.raizVisualEditor) {
+    els.raizVisualEditor.addEventListener("focusin", (e) => {
+      const block = e.target.closest(".raiz-block");
+      if (!block) return;
+      state.activeRaizBlockId = Number(block.dataset.blockId);
+      paintActiveRaizBlock();
+    });
+
+    els.raizVisualEditor.addEventListener("input", (e) => {
+      const blockEl = e.target.closest(".raiz-block");
+      if (!blockEl) return;
+      const blockId = Number(blockEl.dataset.blockId);
+      const block = state.raizBlocks.find((item) => item.id === blockId);
+      if (!block) return;
+      const isTextInput = e.target.matches(".raiz-block-input");
+      if (!isTextInput) return;
+      block.texto = e.target.isContentEditable ? e.target.textContent.trim() : e.target.value.trim();
+      state.activeRaizBlockId = blockId;
+      syncRaizTextoFromBlocks();
+    });
+
+    els.raizVisualEditor.addEventListener("change", (e) => {
+      if (!e.target.matches(".raiz-block-type")) return;
+      const blockEl = e.target.closest(".raiz-block");
+      if (!blockEl) return;
+      const blockId = Number(blockEl.dataset.blockId);
+      const block = state.raizBlocks.find((item) => item.id === blockId);
+      if (!block) return;
+      block.tipo = e.target.value;
+      if (block.tipo === "imagem") {
+        block.bold = false;
+      }
+      state.activeRaizBlockId = blockId;
+      syncRaizTextoFromBlocks({ rerenderEditor: true });
+    });
+
+    els.raizVisualEditor.addEventListener("click", (e) => {
+      const blockEl = e.target.closest(".raiz-block");
+      if (!blockEl) return;
+      const blockId = Number(blockEl.dataset.blockId);
+      state.activeRaizBlockId = blockId;
+
+      const actionBtn = e.target.closest("button[data-action]");
+      if (!actionBtn) {
+        paintActiveRaizBlock();
+        return;
+      }
+
+      const action = actionBtn.dataset.action;
+      if (action === "up") moveRaizBlock(blockId, -1);
+      if (action === "down") moveRaizBlock(blockId, 1);
+      if (action === "remove") removeRaizBlock(blockId);
+    });
+  }
 
   els.btnStamp.addEventListener("click", () => {
     setStampMode(!state.stampMode);
@@ -1333,11 +2166,13 @@ function init() {
     saveComentario(true);
   });
 
-  els.commentMap.addEventListener("click", (e) => {
-    const btn = e.target.closest(".open-comment");
-    if (!btn) return;
-    openCommentDetail(Number(btn.dataset.commentId));
-  });
+  if (els.commentMap) {
+    els.commentMap.addEventListener("click", (e) => {
+      const btn = e.target.closest(".open-comment");
+      if (!btn) return;
+      openCommentDetail(Number(btn.dataset.commentId));
+    });
+  }
 
   els.historicoComentarios.addEventListener("click", (e) => {
     const chevron = e.target.closest(".comment-chevron");
@@ -1361,6 +2196,8 @@ function init() {
   renderTabela();
   renderNotificacoes();
   renderEstruturaProjeto();
+  renderDashboardGeral();
+  setGeralView(state.geralView);
   renderPreview();
   renderComentarios();
   renderCommentOverview();
