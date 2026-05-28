@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CMS Editorial - Wireframe MVP</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="material-theme">
+    <div class="app">
+      <header class="topbar">
+        <div class="topbar-brand">
+          <div class="topbar-logo" aria-hidden="true">E</div>
+          <div class="topbar-brand-text">
+            <h1>CMS Editorial</h1>
+            <p class="subtitle">Wireframe MVP</p>
+          </div>
+          <span id="currentScreenLabel" class="screen-chip" aria-live="polite">Tela Geral</span>
+        </div>
+
+        <div class="topbar-profile">
+          <label for="perfil">Perfil</label>
+          <select id="perfil">
+            <option value="admin">Gestor de Arte (Admin)</option>
+            <option value="editor">Editor/Autor</option>
+            <option value="diagramador">Diagramador</option>
+          </select>
+        </div>
+
+        <nav class="topbar-nav" aria-label="Navegação principal">
+          <button class="nav-btn active" data-screen="geral">Tela Geral</button>
+          <button class="nav-btn" data-screen="edicao">Tela de Edição</button>
+        </nav>
+
+        <div class="topbar-tools">
+          <button type="button" id="btnAjudaAtalhos" class="ghost">Atalhos</button>
+        </div>
+      </header>
+
+      <main class="content">
+        <section id="screen-geral" class="screen active">
+          <header class="screen-header dashboard-header">
+            <div>
+              <h2>Painel de inteligência editorial</h2>
+              <p>Visualize o mesmo conjunto de dados em dois modos: fluxo completo ou detalhamento operacional.</p>
+            </div>
+          </header>
+
+          <section class="card view-modes-card">
+            <div class="view-modes-head">
+              <h3>Visão operacional editorial</h3>
+              <div class="view-head-right">
+                <div class="header-actions">
+                  <button type="button" id="btnBellNotificacoes" class="icon-btn" aria-label="Notificações">
+                    <span class="material-symbols-rounded" aria-hidden="true">notifications</span>
+                  </button>
+                  <button type="button" id="btnExportarRelatorio" class="primary-cta">Exportar relatório</button>
+                </div>
+                <div class="view-tabs" role="tablist" aria-label="Modos de visualização">
+                  <button type="button" class="view-tab active" data-view="fluxo" role="tab" aria-selected="true">Processo editorial completo</button>
+                  <button type="button" class="view-tab" data-view="operacional" role="tab" aria-selected="false">Detalhamento operacional</button>
+                </div>
+              </div>
+            </div>
+
+            <p id="filtrosHint" class="hint filters-hint">Os filtros abaixo afetam os dois modos de visualização.</p>
+
+            <div class="filters">
+              <input id="filtroBusca" type="text" placeholder="Buscar obra/projeto" />
+              <select id="filtroEquipe">
+                <option value="">Equipe</option>
+                <option value="Editorial">Editorial</option>
+                <option value="Diagramação">Diagramação</option>
+                <option value="Digital">Digital</option>
+                <option value="Gestão">Gestão</option>
+              </select>
+              <select id="filtroStatus">
+                <option value="">Status</option>
+                <option value="Atrasado">Atrasado</option>
+                <option value="Em andamento">Em andamento</option>
+                <option value="Bloqueado">Bloqueado</option>
+                <option value="Aguardando aprovação">Aguardando aprovação</option>
+                <option value="Concluído">Concluído</option>
+              </select>
+              <select id="filtroPrioridade">
+                <option value="">Prioridade</option>
+                <option value="Baixa">Baixa</option>
+                <option value="Média">Média</option>
+                <option value="Alta">Alta</option>
+                <option value="Emergencial">Emergencial</option>
+              </select>
+              <select id="filtroSelo">
+                <option value="">Selo</option>
+                <option value="SAE">SAE</option>
+                <option value="SPE">SPE</option>
+                <option value="COC">COC</option>
+                <option value="CQT">CQT</option>
+                <option value="SAS">SAS</option>
+              </select>
+              <select id="filtroSegmento">
+                <option value="">Segmento</option>
+                <option value="EI">EI</option>
+                <option value="AI">AI</option>
+                <option value="AF">AF</option>
+              </select>
+            </div>
+
+            <section class="dash-grid" id="dashGrid">
+              <article class="dash-card" data-dash-action="atrasadas" role="button" tabindex="0" aria-label="Filtrar tarefas atrasadas">
+                <div>
+                  <h4>Tarefas atrasadas</h4>
+                  <strong id="dashAtrasadas">0</strong>
+                  <p>Prioridade para desbloqueio</p>
+                </div>
+                <span class="dash-icon red" aria-hidden="true">
+                  <span class="material-symbols-rounded">schedule</span>
+                </span>
+              </article>
+              <article class="dash-card" data-dash-action="bloqueios" role="button" tabindex="0" aria-label="Filtrar tarefas com bloqueio ativo">
+                <div>
+                  <h4>Bloqueios ativos</h4>
+                  <strong id="dashBloqueios">0</strong>
+                  <p>Dependências travando etapas</p>
+                </div>
+                <span class="dash-icon amber" aria-hidden="true">
+                  <span class="material-symbols-rounded">warning</span>
+                </span>
+              </article>
+              <article class="dash-card" data-dash-action="comentarios" role="button" tabindex="0" aria-label="Abrir comentários em aberto">
+                <div>
+                  <h4>Comentários abertos</h4>
+                  <strong id="dashComentarios">0</strong>
+                  <p>Pendências sem resolução</p>
+                </div>
+                <span class="dash-icon blue" aria-hidden="true">
+                  <span class="material-symbols-rounded">chat_bubble</span>
+                </span>
+              </article>
+              <article class="dash-card" data-dash-action="impactos" role="button" tabindex="0" aria-label="Filtrar impactos de layout na raiz">
+                <div>
+                  <h4>Impactos no layout</h4>
+                  <strong id="dashImpactos">0</strong>
+                  <p>Mudanças na raiz afetaram páginas</p>
+                </div>
+                <span class="dash-icon orange" aria-hidden="true">
+                  <span class="material-symbols-rounded">bolt</span>
+                </span>
+              </article>
+            </section>
+
+            <div id="view-fluxo" class="view-panel active" role="tabpanel">
+              <div class="flow-header">
+                <h3>Fluxo editorial por etapas</h3>
+                <p>Mapa de etapas com dados filtrados. Em seguida podemos evoluir para sanfona com subitens.</p>
+              </div>
+              <p id="fluxoResumo" class="hint panel-summary"></p>
+              <div class="fluxo-scroll-wrap">
+                <button type="button" id="fluxoScrollPrev" class="flow-scroll-btn" aria-label="Rolar etapas para a esquerda">
+                  <span class="material-symbols-rounded" aria-hidden="true">chevron_left</span>
+                </button>
+                <div id="fluxoScroll" class="fluxo-scroll" aria-label="Trilho de etapas do fluxo editorial">
+                  <div id="fluxoEtapas" class="fluxo-etapas"></div>
+                </div>
+                <button type="button" id="fluxoScrollNext" class="flow-scroll-btn" aria-label="Rolar etapas para a direita">
+                  <span class="material-symbols-rounded" aria-hidden="true">chevron_right</span>
+                </button>
+              </div>
+            </div>
+
+            <div id="view-operacional" class="view-panel" role="tabpanel" aria-hidden="true">
+              <p id="operacionalResumo" class="hint panel-summary"></p>
+              <div class="kpis" id="kpis"></div>
+
+              <div class="layout-grid">
+                <section class="card">
+                  <h3>Itens do fluxo</h3>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Projeto</th>
+                        <th>Equipe</th>
+                        <th>Status</th>
+                        <th>Prazo</th>
+                        <th>Etapa</th>
+                        <th>Selo</th>
+                        <th>Segmento</th>
+                        <th>Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody id="tabelaItens"></tbody>
+                  </table>
+                </section>
+              </div>
+            </div>
+          </section>
+        </section>
+
+        <section id="screen-notificacoes" class="screen">
+          <header class="screen-header task-header">
+            <div>
+              <h2>Notificações</h2>
+              <p id="notificacoesSubtitulo">Comentários e atualizações por equipe e projeto.</p>
+            </div>
+            <button type="button" id="btnVoltarTelaGeral" class="ghost">Voltar</button>
+          </header>
+
+          <div class="notifications-screen-grid">
+            <section class="card notifications">
+              <div class="notif-header">
+                <h3>Feed de comentários</h3>
+                <div>
+                  <button class="mini-btn active" data-notif-filter="all">Todas</button>
+                  <button class="mini-btn" data-notif-filter="normal">Normais</button>
+                  <button class="mini-btn" data-notif-filter="emergencial">Emergenciais</button>
+                </div>
+              </div>
+              <ul id="listaNotificacoes"></ul>
+            </section>
+          </div>
+        </section>
+
+        <section id="screen-tarefa" class="screen">
+          <header class="screen-header task-header">
+            <div>
+              <p id="tarefaBreadcrumb" class="hint">PRE-UNI26</p>
+              <h2 id="tarefaTitulo">Tarefa</h2>
+              <p id="tarefaSubtitulo">Visão macro para acompanhamento e decisão rápida.</p>
+            </div>
+            <button type="button" id="btnVoltarNotificacoes" class="ghost">Voltar</button>
+          </header>
+
+          <section class="task-macro-grid">
+            <article class="card macro-card">
+              <h3>Status e Prazo</h3>
+              <div class="macro-line"><span>Status</span><strong id="taskStatus">-</strong></div>
+              <div class="macro-line"><span>Prioridade</span><strong id="taskPrioridade">-</strong></div>
+              <div class="macro-line"><span>Prazo</span><strong id="taskPrazo">-</strong></div>
+              <div class="macro-line"><span>SLA</span><strong id="taskSla">-</strong></div>
+            </article>
+
+            <article class="card macro-card">
+              <h3>Responsáveis</h3>
+              <div class="macro-line"><span>Dono da tarefa</span><strong id="taskResponsavel">-</strong></div>
+              <div class="macro-line"><span>Equipe</span><strong id="taskEquipe">-</strong></div>
+              <div class="macro-line"><span>Comentários abertos</span><strong id="taskComentariosAbertos">-</strong></div>
+              <div class="macro-line"><span>Alertas emergenciais</span><strong id="taskAlertas">-</strong></div>
+            </article>
+
+            <article class="card macro-card progress-card">
+              <h3>Andamento</h3>
+              <p id="taskEntregavel" class="hint">-</p>
+              <div class="progress-wrap">
+                <div id="taskProgressFill" class="progress-fill"></div>
+              </div>
+              <strong id="taskProgresso">0%</strong>
+              <p id="taskUltimaAtualizacao" class="hint">Última atualização: -</p>
+            </article>
+          </section>
+
+          <section class="task-detail-grid">
+            <article class="card macro-card">
+              <h3>Dependências</h3>
+              <ul id="taskDependencias" class="macro-list"></ul>
+            </article>
+
+            <article class="card macro-card">
+              <h3>Riscos e Bloqueios</h3>
+              <p id="taskBloqueio" class="hint">-</p>
+              <ul id="taskRiscos" class="macro-list"></ul>
+            </article>
+
+            <article class="card macro-card">
+              <h3>Ações Mais Utilizadas</h3>
+              <ul id="taskAcoesPerfil" class="macro-list"></ul>
+            </article>
+          </section>
+        </section>
+
+        <section id="screen-edicao" class="screen">
+          <header class="screen-header">
+            <h2>Edição: Arquivo Raiz vs Layout</h2>
+            <p>Edição controlada por perfil, comentários com atribuição obrigatória e alertas.</p>
+          </header>
+
+          <div class="editor-toolbar">
+            <button type="button" id="btnStamp">Adicionar comentário (stamp)</button>
+            <button type="button" id="btnHistorico" class="ghost">Comentários</button>
+            <p id="stampHint" class="hint">Ative o modo stamp para marcar no layout.</p>
+          </div>
+
+          <div class="editor-layout">
+            <section class="card panel-raiz">
+              <h3>Arquivo Raiz</h3>
+              <div class="raiz-toolbar" role="toolbar" aria-label="Ações de edição do arquivo raiz">
+                <button type="button" id="btnRaizTitulo" class="mini-btn">+ Título</button>
+                <button type="button" id="btnRaizCorpo" class="mini-btn">+ Corpo</button>
+                <button type="button" id="btnRaizBold" class="mini-btn">Negrito</button>
+                <button type="button" id="btnRaizImagem" class="mini-btn">+ Imagem (box)</button>
+              </div>
+              <div id="raizVisualEditor" class="raiz-visual-editor" aria-label="Editor visual do arquivo raiz"></div>
+              <textarea id="arquivoRaiz" hidden aria-hidden="true"></textarea>
+              <p id="raizHint" class="hint"></p>
+              <section id="raizImpactAlert" class="raiz-impact-alert hidden" role="alert" aria-live="assertive">
+                <p id="raizImpactMessage">Atenção: a alteracao na raiz causou alterações no layout</p>
+                <div class="raiz-impact-actions">
+                  <button type="button" id="btnRaizImpactSignal" class="mini-btn">Continuar e sinalizar setor responsavel</button>
+                  <button type="button" id="btnRaizImpactRevert" class="mini-btn danger">Reverter alteracao</button>
+                </div>
+              </section>
+            </section>
+
+            <section class="card panel-layout">
+              <div class="tabs">
+                <button class="tab-btn active" data-layout-tab="pre">Impresso</button>
+                <button class="tab-btn" data-layout-tab="html">Digital</button>
+              </div>
+              <div id="layoutPreview" class="preview pre"></div>
+              <p id="layoutHint" class="hint"></p>
+            </section>
+          </div>
+
+        </section>
+      </main>
+    </div>
+
+    <aside id="commentsDrawer" class="comments-drawer hidden" aria-label="Comentários">
+      <div id="commentsDrawerBackdrop" class="comments-drawer-backdrop"></div>
+      <section class="comments-drawer-panel">
+        <div class="history-header">
+          <div>
+            <h3>Comentários</h3>
+            <p class="hint">Gestão completa do histórico, filtros e resolução.</p>
+          </div>
+          <button type="button" id="fecharHistorico" class="ghost">Fechar</button>
+        </div>
+
+        <div class="drawer-filters">
+          <select id="filtroComentariosStatus">
+            <option value="todos">Todos os status</option>
+            <option value="aberto">Abertos</option>
+            <option value="resolvido">Resolvidos</option>
+          </select>
+          <select id="filtroComentariosEquipe">
+            <option value="todas">Todas as equipes</option>
+            <option value="Editorial">Editorial</option>
+            <option value="Diagramação">Diagramação</option>
+          </select>
+        </div>
+
+        <ul id="historicoComentarios"></ul>
+      </section>
+    </aside>
+
+    <div id="snackbar" class="snackbar" role="status" aria-live="polite" aria-atomic="true"></div>
+
+    <div id="comentarioModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitulo">
+      <div class="modal-card">
+        <h3 id="modalTitulo">Novo comentário</h3>
+        <p id="modalContexto" class="hint"></p>
+        <form id="comentarioForm">
+          <textarea id="comentarioTexto" placeholder="Descreva a solicitação..."></textarea>
+          <div class="row">
+            <select id="comentarioEquipe" required>
+              <option value="">Atribuir equipe (obrigatório)</option>
+              <option value="Editorial">Editorial</option>
+              <option value="Diagramação">Diagramação</option>
+            </select>
+            <select id="comentarioPrioridade">
+              <option value="Média">Prioridade média</option>
+              <option value="Alta">Prioridade alta</option>
+              <option value="Emergencial">Emergencial</option>
+            </select>
+          </div>
+          <div class="row row-actions">
+            <button type="submit">Salvar comentário</button>
+            <button type="button" id="btnEmergencial" class="danger">Acionar alerta emergencial</button>
+            <button type="button" id="cancelarComentario" class="ghost">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="commentDetailModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="detailTitulo">
+      <div class="modal-card">
+        <h3 id="detailTitulo">Comentário</h3>
+        <div class="comment-head">
+          <strong id="detailNumero">#1</strong>
+          <div class="comment-tags">
+            <span id="detailPrioridade" class="tag-priority default">Média</span>
+            <span id="detailEquipe" class="tag-team">Diagramação</span>
+            <span id="detailStatus" class="tag-priority default">Aberto</span>
+          </div>
+        </div>
+        <p id="detailAlvo" class="hint"></p>
+        <p id="detailTexto"></p>
+
+        <section class="thread-section">
+          <div class="thread-section-head">
+            <h4>Thread do comentário</h4>
+            <small>Idas e vindas entre equipes ficam registradas aqui.</small>
+          </div>
+          <ul id="detailThreadList" class="detail-thread-list"></ul>
+          <div class="thread-compose">
+            <textarea id="detailThreadInput" placeholder="Adicionar nova demanda, resposta ou contexto..."></textarea>
+            <button type="button" id="btnAdicionarThread" class="ghost">Adicionar no thread</button>
+          </div>
+        </section>
+
+        <div class="row row-actions">
+          <button type="button" id="btnIrParaComentario">Ir para trecho</button>
+          <button type="button" id="btnResolverComentario" class="success-action">Resolver comentário</button>
+          <button type="button" id="btnFecharComentario" class="ghost">Fechar</button>
+        </div>
+
+        <section class="return-section">
+          <p class="hint">Se não for para resolver agora, devolva para outra área responsável.</p>
+          <div class="row return-row">
+            <select id="devolverEquipe">
+              <option value="Editorial">Editorial</option>
+              <option value="Diagramação">Diagramação</option>
+            </select>
+            <button type="button" id="btnDevolverArea">Devolver para área</button>
+          </div>
+        </section>
+        <p id="detailResolutionMeta" class="hint"></p>
+      </div>
+    </div>
+
+    <div id="atalhosModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="atalhosTitulo">
+      <div class="modal-card atalhos-card">
+        <h3 id="atalhosTitulo">Atalhos do protótipo</h3>
+        <p class="hint">Use estes atalhos durante a apresentação para navegar com rapidez e reforçar usabilidade.</p>
+        <ul class="atalhos-list">
+          <li><kbd>Alt</kbd> + <kbd>1</kbd><span>Ir para Tela Geral</span></li>
+          <li><kbd>Alt</kbd> + <kbd>2</kbd><span>Ir para Tela de Edição</span></li>
+          <li><kbd>Alt</kbd> + <kbd>3</kbd><span>Abrir Notificações</span></li>
+          <li><kbd>/</kbd><span>Focar busca de projetos</span></li>
+          <li><kbd>?</kbd><span>Abrir este guia de atalhos</span></li>
+          <li><kbd>Esc</kbd><span>Fechar modal/painel aberto</span></li>
+        </ul>
+        <div class="row row-actions atalhos-actions">
+          <button type="button" id="btnFecharAtalhos" class="ghost">Fechar guia</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chatbot Assistente -->
+    <button id="chatFab" class="chat-fab" aria-label="Abrir assistente" title="Assistente editorial">
+      <span class="material-symbols-rounded chat-fab-icon" aria-hidden="true">smart_toy</span>
+      <span class="material-symbols-rounded chat-fab-close hidden" aria-hidden="true">close</span>
+    </button>
+
+    <div id="chatPanel" class="chat-panel hidden" role="dialog" aria-modal="false" aria-label="Assistente editorial">
+      <div class="chat-panel-header">
+        <div class="chat-header-info">
+          <span class="chat-avatar" aria-hidden="true">
+            <span class="material-symbols-rounded">smart_toy</span>
+          </span>
+          <div>
+            <strong>Assistente Editorial</strong>
+            <span class="chat-demo-badge">Demo</span>
+          </div>
+        </div>
+        <button type="button" id="chatClose" class="ghost chat-close-btn" aria-label="Fechar assistente">
+          <span class="material-symbols-rounded" aria-hidden="true">close</span>
+        </button>
+      </div>
+
+      <div class="chat-messages" id="chatMessages" aria-live="polite" aria-atomic="false"></div>
+
+      <div class="chat-chips" id="chatChips"></div>
+
+      <form class="chat-input-row" id="chatForm" autocomplete="off">
+        <input
+          type="text"
+          id="chatInput"
+          placeholder="Pergunte algo sobre o fluxo..."
+          aria-label="Mensagem para o assistente"
+          maxlength="300"
+        />
+        <button type="submit" class="chat-send-btn" aria-label="Enviar mensagem">
+          <span class="material-symbols-rounded" aria-hidden="true">send</span>
+        </button>
+      </form>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
