@@ -18,6 +18,7 @@
         <div class="topbar-brand">
           <h1>CMS Editorial</h1>
           <p class="subtitle">Wireframe MVP</p>
+          <span id="currentScreenLabel" class="screen-chip" aria-live="polite">Tela Geral</span>
         </div>
 
         <div class="topbar-profile">
@@ -33,6 +34,10 @@
           <button class="nav-btn active" data-screen="geral">Tela Geral</button>
           <button class="nav-btn" data-screen="edicao">Tela de Edição</button>
         </nav>
+
+        <div class="topbar-tools">
+          <button type="button" id="btnAjudaAtalhos" class="ghost">Atalhos</button>
+        </div>
       </header>
 
       <main class="content">
@@ -194,9 +199,12 @@
         </section>
 
         <section id="screen-notificacoes" class="screen">
-          <header class="screen-header">
-            <h2>Notificações</h2>
-            <p id="notificacoesSubtitulo">Comentários e atualizações por equipe e projeto.</p>
+          <header class="screen-header task-header">
+            <div>
+              <h2>Notificações</h2>
+              <p id="notificacoesSubtitulo">Comentários e atualizações por equipe e projeto.</p>
+            </div>
+            <button type="button" id="btnVoltarTelaGeral" class="ghost">Voltar</button>
           </header>
 
           <div class="notifications-screen-grid">
@@ -424,6 +432,24 @@
           </div>
         </section>
         <p id="detailResolutionMeta" class="hint"></p>
+      </div>
+    </div>
+
+    <div id="atalhosModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="atalhosTitulo">
+      <div class="modal-card atalhos-card">
+        <h3 id="atalhosTitulo">Atalhos do protótipo</h3>
+        <p class="hint">Use estes atalhos durante a apresentação para navegar com rapidez e reforçar usabilidade.</p>
+        <ul class="atalhos-list">
+          <li><kbd>Alt</kbd> + <kbd>1</kbd><span>Ir para Tela Geral</span></li>
+          <li><kbd>Alt</kbd> + <kbd>2</kbd><span>Ir para Tela de Edição</span></li>
+          <li><kbd>Alt</kbd> + <kbd>3</kbd><span>Abrir Notificações</span></li>
+          <li><kbd>/</kbd><span>Focar busca de projetos</span></li>
+          <li><kbd>?</kbd><span>Abrir este guia de atalhos</span></li>
+          <li><kbd>Esc</kbd><span>Fechar modal/painel aberto</span></li>
+        </ul>
+        <div class="row row-actions atalhos-actions">
+          <button type="button" id="btnFecharAtalhos" class="ghost">Fechar guia</button>
+        </div>
       </div>
     </div>
 

@@ -328,6 +328,8 @@ const state = {
 const els = {
   perfil: document.querySelector("#perfil"),
   navBtns: document.querySelectorAll(".nav-btn"),
+  currentScreenLabel: document.querySelector("#currentScreenLabel"),
+  btnAjudaAtalhos: document.querySelector("#btnAjudaAtalhos"),
   screens: {
     geral: document.querySelector("#screen-geral"),
     edicao: document.querySelector("#screen-edicao"),
@@ -361,6 +363,7 @@ const els = {
   notificacoesSubtitulo: document.querySelector("#notificacoesSubtitulo"),
   notifBtns: document.querySelectorAll(".mini-btn[data-notif-filter]"),
   btnBellNotificacoes: document.querySelector("#btnBellNotificacoes"),
+  btnVoltarTelaGeral: document.querySelector("#btnVoltarTelaGeral"),
   btnExportarRelatorio: document.querySelector("#btnExportarRelatorio"),
   estruturaProjeto: document.querySelector("#estruturaProjeto"),
   btnVoltarNotificacoes: document.querySelector("#btnVoltarNotificacoes"),
@@ -420,6 +423,8 @@ const els = {
   visaoPerfilHint: document.querySelector("#visaoPerfilHint"),
   commentMap: document.querySelector("#commentMap"),
   commentDetailModal: document.querySelector("#commentDetailModal"),
+  atalhosModal: document.querySelector("#atalhosModal"),
+  btnFecharAtalhos: document.querySelector("#btnFecharAtalhos"),
   detailNumero: document.querySelector("#detailNumero"),
   detailPrioridade: document.querySelector("#detailPrioridade"),
   detailEquipe: document.querySelector("#detailEquipe"),
@@ -614,6 +619,19 @@ function openScreen(screenKey) {
   Object.entries(els.screens).forEach(([k, el]) => {
     el.classList.toggle("active", k === screenKey);
   });
+
+  const labels = {
+    geral: "Tela Geral",
+    edicao: "Tela de Edição",
+    notificacoes: "Notificações",
+    tarefa: "Detalhe da tarefa",
+  };
+
+  const label = labels[screenKey] || "Tela";
+  if (els.currentScreenLabel) {
+    els.currentScreenLabel.textContent = label;
+  }
+  document.title = `CMS Editorial - ${label}`;
 }
 
 function normalizeLayoutTab(tab) {
@@ -887,9 +905,127 @@ function clearQuickFilters() {
   state.quickFilter = "";
 }
 
+function clearAllFilters() {
+  els.filtroBusca.value = "";
+  els.filtroEquipe.value = "";
+  els.filtroStatus.value = "";
+  els.filtroPrioridade.value = "";
+  els.filtroSelo.value = "";
+  els.filtroSegmento.value = "";
+  clearQuickFilters();
+  renderTabela();
+  renderDashboardGeral();
+  showSnackbar("Filtros limpos. Exibindo visão completa.");
+}
+
+function updateFiltersHint() {
+  if (!els.filtrosHint) return;
+
+  const active = [];
+  if (els.filtroBusca.value.trim()) active.push(`busca: ${els.filtroBusca.value.trim()}`);
+  if (els.filtroEquipe.value) active.push(`equipe: ${els.filtroEquipe.value}`);
+  if (els.filtroStatus.value) active.push(`status: ${els.filtroStatus.value}`);
+  if (els.filtroPrioridade.value) active.push(`prioridade: ${els.filtroPrioridade.value}`);
+  if (els.filtroSelo.value) active.push(`selo: ${els.filtroSelo.value}`);
+  if (els.filtroSegmento.value) active.push(`segmento: ${els.filtroSegmento.value}`);
+  if (state.quickFilter === "bloqueio-ativo") active.push("bloqueio ativo");
+  if (state.quickFilter === "impacto-raiz") active.push("impacto na raiz");
+
+  if (!active.length) {
+    els.filtrosHint.textContent = "Sem filtros ativos: visão completa do fluxo editorial.";
+    return;
+  }
+
+  els.filtrosHint.textContent = `Filtros ativos (${active.length}): ${active.join(" | ")}.`;
+}
+
+function openAtalhosModal() {
+  if (!els.atalhosModal) return;
+  els.atalhosModal.classList.remove("hidden");
+}
+
+function closeAtalhosModal() {
+  if (!els.atalhosModal) return;
+  els.atalhosModal.classList.add("hidden");
+}
+
+function isTypingContext(target) {
+  if (!target) return false;
+  return target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.tagName === "SELECT" || target.isContentEditable;
+}
+
+function handleGlobalShortcuts(event) {
+  const key = event.key;
+  const typing = isTypingContext(event.target);
+
+  if (!typing && key === "?") {
+    event.preventDefault();
+    openAtalhosModal();
+    return;
+  }
+
+  if (key === "Escape") {
+    if (els.atalhosModal && !els.atalhosModal.classList.contains("hidden")) {
+      closeAtalhosModal();
+      return;
+    }
+    if (!els.commentDetailModal.classList.contains("hidden")) {
+      closeCommentDetail();
+      return;
+    }
+    if (!els.comentarioModal.classList.contains("hidden")) {
+      closeComentarioModal();
+      return;
+    }
+    if (!els.commentsDrawer.classList.contains("hidden")) {
+      closeCommentsDrawer();
+      return;
+    }
+    if (state.stampMode) {
+      setStampMode(false);
+      showSnackbar("Modo stamp desativado.");
+    }
+    return;
+  }
+
+  if (typing) return;
+
+  if (key === "/") {
+    event.preventDefault();
+    openScreen("geral");
+    els.filtroBusca.focus();
+    els.filtroBusca.select();
+    return;
+  }
+
+  if (event.altKey && key === "1") {
+    event.preventDefault();
+    openScreen("geral");
+    return;
+  }
+
+  if (event.altKey && key === "2") {
+    event.preventDefault();
+    openScreen("edicao");
+    return;
+  }
+
+  if (event.altKey && key === "3") {
+    event.preventDefault();
+    openNotificacoesFeed();
+  }
+}
+
+function openNotificacoesFeed() {
+  state.notifFilter = "all";
+  els.notifBtns.forEach((btn) => btn.classList.toggle("active", btn.dataset.notifFilter === "all"));
+  openScreen("notificacoes");
+  renderNotificacoes();
+}
+
 function applyDashboardAction(action) {
   if (action === "comentarios") {
-    showSnackbar("Acesse notificações pelo botão do sininho no topo.");
+    openNotificacoesFeed();
     return;
   }
 
@@ -963,13 +1099,7 @@ function renderDashboardGeral() {
     els.operacionalResumo.textContent = `${tarefasFiltradas.length} tarefa(s) no detalhamento operacional com os filtros atuais.`;
   }
   if (els.filtrosHint) {
-    let quick = "";
-    if (state.quickFilter === "impacto-raiz") {
-      quick = "Filtro rápido ativo: impactos de layout por edição de raiz.";
-    } else if (state.quickFilter === "bloqueio-ativo") {
-      quick = "Filtro rápido ativo: tarefas com bloqueio/dependência ativa.";
-    }
-    els.filtrosHint.textContent = quick || "Os filtros abaixo afetam os dois modos de visualização.";
+    updateFiltersHint();
   }
 
   els.fluxoEtapas.innerHTML = state.fluxosEditoriais
@@ -1080,12 +1210,17 @@ function scrollFluxoEtapas(direction) {
 
 function renderTabela() {
   const tarefas = getTarefasFiltradas();
+  updateFiltersHint();
   renderKpis(tarefas);
 
   if (!tarefas.length) {
     els.tabelaItens.innerHTML = `
       <tr>
-        <td colspan="8" class="empty-row">Nenhuma tarefa encontrada para os filtros selecionados.</td>
+        <td colspan="8" class="empty-row">
+          <strong>Nenhuma tarefa encontrada com os filtros atuais.</strong>
+          <span>Limpe os filtros para voltar à visão completa do fluxo.</span>
+          <button type="button" class="mini-btn empty-action" data-empty-action="limpar-filtros">Limpar filtros</button>
+        </td>
       </tr>
     `;
     return;
@@ -1172,7 +1307,13 @@ function renderNotificacoes() {
     })
     .join("");
 
-  els.listaNotificacoes.innerHTML = html || '<li><p>Nenhuma notificação para os filtros e perfil atual.</p></li>';
+  els.listaNotificacoes.innerHTML = html || `
+    <li class="empty-notif">
+      <strong>Sem notificações para esta combinação de perfil e filtro.</strong>
+      <p>Você pode voltar para a lista completa com um clique.</p>
+      <button type="button" class="mini-btn" data-notif-empty-action="show-all">Ver todas</button>
+    </li>
+  `;
 
   const basePerfil = state.comentarios.filter((c) => {
     if (isGestorArte) return c.equipe === "Diagramação";
@@ -1725,6 +1866,16 @@ function closeCommentDetail() {
 }
 
 function openCommentsDrawer() {
+  state.commentStatusFilter = "todos";
+  state.commentTeamFilter = "todas";
+  if (els.filtroComentariosStatus) {
+    els.filtroComentariosStatus.value = "todos";
+  }
+  if (els.filtroComentariosEquipe) {
+    els.filtroComentariosEquipe.value = "todas";
+  }
+  renderComentarios();
+  renderPreview();
   els.commentsDrawer.classList.remove("hidden");
 }
 
@@ -1907,6 +2058,7 @@ function abrirTarefa(taskId) {
 window.abrirTarefa = abrirTarefa;
 
 function init() {
+  openScreen(state.currentScreen);
   state.raizBaselineWords = wordsCount(state.raizTexto);
   state.layoutTab = normalizeLayoutTab(state.layoutTab);
   state.raizBlocks = hydrateRaizBlocksFromText(state.raizTexto);
@@ -1923,10 +2075,7 @@ function init() {
 
   if (els.btnBellNotificacoes) {
     els.btnBellNotificacoes.addEventListener("click", () => {
-      state.notifFilter = "all";
-      els.notifBtns.forEach((btn) => btn.classList.toggle("active", btn.dataset.notifFilter === "all"));
-      openScreen("notificacoes");
-      renderNotificacoes();
+      openNotificacoesFeed();
     });
   }
 
@@ -1938,6 +2087,12 @@ function init() {
   els.btnVoltarNotificacoes.addEventListener("click", () => {
     openScreen(state.lastScreenBeforeTask || "geral");
   });
+
+  if (els.btnVoltarTelaGeral) {
+    els.btnVoltarTelaGeral.addEventListener("click", () => {
+      openScreen("geral");
+    });
+  }
 
   els.perfil.addEventListener("change", (e) => {
     state.perfil = e.target.value;
@@ -1988,9 +2143,23 @@ function init() {
   });
 
   els.listaNotificacoes.addEventListener("click", (e) => {
+    const emptyActionBtn = e.target.closest("[data-notif-empty-action='show-all']");
+    if (emptyActionBtn) {
+      state.notifFilter = "all";
+      els.notifBtns.forEach((btn) => btn.classList.toggle("active", btn.dataset.notifFilter === "all"));
+      renderNotificacoes();
+      return;
+    }
+
     const btn = e.target.closest(".notif-item");
     if (!btn) return;
     openComentarioViaNotificacao(Number(btn.dataset.commentId));
+  });
+
+  els.tabelaItens.addEventListener("click", (e) => {
+    const actionBtn = e.target.closest("[data-empty-action='limpar-filtros']");
+    if (!actionBtn) return;
+    clearAllFilters();
   });
 
   if (els.estruturaProjeto) {
@@ -2142,6 +2311,22 @@ function init() {
   els.commentDetailModal.addEventListener("click", (e) => {
     if (e.target === els.commentDetailModal) closeCommentDetail();
   });
+
+  if (els.atalhosModal) {
+    els.atalhosModal.addEventListener("click", (e) => {
+      if (e.target === els.atalhosModal) closeAtalhosModal();
+    });
+  }
+
+  if (els.btnAjudaAtalhos) {
+    els.btnAjudaAtalhos.addEventListener("click", openAtalhosModal);
+  }
+
+  if (els.btnFecharAtalhos) {
+    els.btnFecharAtalhos.addEventListener("click", closeAtalhosModal);
+  }
+
+  window.addEventListener("keydown", handleGlobalShortcuts);
 
   els.layoutPreview.addEventListener("click", (e) => {
     const marker = e.target.closest(".layout-stamp");
