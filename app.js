@@ -2389,3 +2389,253 @@ function init() {
 }
 
 init();
+
+// ─── Chatbot Assistente ─────────────────────────────────────────────
+
+(function initChat() {
+  const fab = document.getElementById("chatFab");
+  const panel = document.getElementById("chatPanel");
+  const closeBtn = document.getElementById("chatClose");
+  const messagesEl = document.getElementById("chatMessages");
+  const chipsEl = document.getElementById("chatChips");
+  const form = document.getElementById("chatForm");
+  const input = document.getElementById("chatInput");
+
+  let chatOpen = false;
+  let greeted = false;
+
+  // ── Intents & respostas ──────────────────────────────────────────
+
+  const CHIPS_INICIAL = [
+    "Ver bloqueios ativos",
+    "Tarefas atrasadas",
+    "Comentários pendentes",
+    "Como navegar no painel",
+    "O que é esse protótipo?",
+  ];
+
+  const CHIPS_FOLLOWUP = [
+    "Ver bloqueios ativos",
+    "Tarefas atrasadas",
+    "Exportar relatório",
+    "Como funciona o fluxo",
+  ];
+
+  function getBotReply(text) {
+    const t = text.toLowerCase();
+
+    if (/(o que|pra que|prototipo|protótipo|demonstracao|demonstração|demo|objetivo|função|funcao|serve)/.test(t)) {
+      return {
+        html: `Este é um <strong>protótipo funcional de demonstração</strong> do CMS Editorial.<br><br>
+O objetivo é simular a inteligência operacional de um sistema editorial real: <em>rastrear o fluxo de produção, identificar gargalos antes que virem bloqueios, centralizar comentários entre equipes e dar ao gestor de arte uma visão clara do estado de cada projeto</em> — tudo em tempo real e num único lugar.<br><br>
+Nada aqui é dado de produção, mas tudo funciona como funcionaria no sistema final. Explore à vontade! 🔭`,
+        chips: CHIPS_FOLLOWUP,
+      };
+    }
+
+    if (/(bloqueio|bloqueado|travado|impedimento)/.test(t)) {
+      const bloqueados = state.itens.filter((i) => i.status === "Bloqueado");
+      if (bloqueados.length === 0) {
+        return { html: "Ótima notícia: <strong>nenhum projeto está bloqueado</strong> no momento. Continue monitorando o painel para agir rápido caso isso mude.", chips: CHIPS_FOLLOWUP };
+      }
+      const lista = bloqueados.map((i) => `<li><strong>${i.projeto}</strong> — ${i.equipe} · Prazo: ${formatDate(i.prazo)}</li>`).join("");
+      return {
+        html: `Encontrei <strong>${bloqueados.length} projeto(s) com bloqueio ativo</strong>:<br><ul>${lista}</ul>Para desbloqueá-los, verifique se há comentários abertos ou dependências entre equipes. Você pode clicar no cartão de <em>"Bloqueios ativos"</em> no painel para filtrar direto.`,
+        chips: CHIPS_FOLLOWUP,
+      };
+    }
+
+    if (/(atrasad|prazo|deadline|vencid|urgente|emergencial)/.test(t)) {
+      const hoje = new Date();
+      hoje.setHours(0, 0, 0, 0);
+      const atrasados = state.itens.filter((i) => {
+        const d = new Date(i.prazo + "T00:00:00");
+        return d < hoje && i.status !== "Concluído";
+      });
+      if (atrasados.length === 0) {
+        return { html: "Nenhum projeto está com prazo vencido no momento. Mas fique de olho: dois projetos vencem nos próximos dias!", chips: CHIPS_FOLLOWUP };
+      }
+      const lista = atrasados.map((i) => `<li><strong>${i.projeto}</strong> — venceu em ${formatDate(i.prazo)}</li>`).join("");
+      return {
+        html: `<strong>${atrasados.length} projeto(s) com prazo vencido:</strong><ul>${lista}</ul>Recomendo escalar para o gestor e registrar um comentário de emergência se necessário.`,
+        chips: CHIPS_FOLLOWUP,
+      };
+    }
+
+    if (/(comentar|pendente|aberto|thread|feedback)/.test(t)) {
+      const abertos = state.comentarios.filter((c) => !c.resolvido);
+      if (abertos.length === 0) {
+        return { html: "Todos os comentários estão resolvidos. O fluxo está limpo! ✅", chips: CHIPS_FOLLOWUP };
+      }
+      const lista = abertos.map((c) => `<li>#${c.id} — ${c.texto.substring(0, 60)}… <em>(${c.equipe})</em></li>`).join("");
+      return {
+        html: `Há <strong>${abertos.length} comentário(s) aberto(s)</strong>:<ul>${lista}</ul>Acesse o painel de comentários pelo botão <em>"Comentários abertos"</em> no dashboard ou pelo ícone de histórico.`,
+        chips: CHIPS_FOLLOWUP,
+      };
+    }
+
+    if (/(exportar|relatorio|relatório|csv|download)/.test(t)) {
+      return {
+        html: `Para exportar, clique no botão <strong>"Exportar relatório"</strong> no topo da tela geral. No protótipo atual isso simula a ação com uma notificação — em produção geraria um CSV/PDF com os dados filtrados visíveis.`,
+        chips: CHIPS_FOLLOWUP,
+      };
+    }
+
+    if (/(navegar|tela|ir para|como usar|atalho|menu|tab)/.test(t)) {
+      return {
+        html: `Aqui vai um mapa rápido:<br><br>
+<strong>Tela Geral</strong> → painel de inteligência com dashboards e fluxo editorial.<br>
+<strong>Tela de Edição</strong> → editor de texto da obra com preview impresso e digital.<br><br>
+Use o menu no topo para trocar de tela. Também há <strong>atalhos de teclado</strong> — clique em "Atalhos" no canto superior direito para ver todos.<br><br>
+Você pode mudar de perfil (Gestor, Editor, Diagramador) para ver como cada papel enxerga o sistema.`,
+        chips: CHIPS_FOLLOWUP,
+      };
+    }
+
+    if (/(fluxo|etapa|processo|editorial|ciclo|produção|producao)/.test(t)) {
+      return {
+        html: `O <strong>fluxo editorial</strong> deste CMS passa por estas etapas principais:<br><ul>
+<li>📝 <strong>Autoria</strong> — texto bruto entra no editor</li>
+<li>✏️ <strong>Edição/Revisão</strong> — comentários e ajustes por equipe</li>
+<li>🖨️ <strong>Diagramação</strong> — layout impresso e digital</li>
+<li>✅ <strong>Aprovação</strong> — gestor libera a parte para produção</li>
+</ul>O painel mostra em qual etapa cada projeto está e onde estão os gargalos.`,
+        chips: CHIPS_FOLLOWUP,
+      };
+    }
+
+    if (/(gargalo|gargalos|problema|critico|crítico|risco)/.test(t)) {
+      const bloqueados = state.itens.filter((i) => i.status === "Bloqueado").length;
+      const urgentes = state.itens.filter((i) => i.prioridade === "Emergencial").length;
+      const abertos = state.comentarios.filter((c) => !c.resolvido).length;
+      return {
+        html: `Analisando o estado atual do fluxo:<br><ul>
+<li>🔴 <strong>${bloqueados} bloqueio(s) ativo(s)</strong> — projetos parados por dependência</li>
+<li>⚡ <strong>${urgentes} item(ns) emergencial(is)</strong> — exigem ação imediata</li>
+<li>💬 <strong>${abertos} comentário(s) em aberto</strong> — pendências sem resolução</li>
+</ul>${bloqueados + urgentes > 0 ? "Há gargalos críticos. Recomendo resolver os bloqueios antes de qualquer nova tarefa." : "Situação relativamente estável. Continue monitorando!"}`,
+        chips: CHIPS_FOLLOWUP,
+      };
+    }
+
+    if (/(oi|olá|ola|boa|hey|hi|tudo)/.test(t)) {
+      return {
+        html: `Olá! Estou aqui para ajudar com o <strong>CMS Editorial</strong>. Pode me perguntar sobre bloqueios, prazos, comentários pendentes, como navegar pelo sistema ou o que quiser! 😊`,
+        chips: CHIPS_INICIAL,
+      };
+    }
+
+    return {
+      html: `Não encontrei uma resposta específica para isso, mas posso te ajudar com:<br><ul>
+<li>Identificar bloqueios e gargalos</li>
+<li>Ver prazos e tarefas atrasadas</li>
+<li>Verificar comentários pendentes</li>
+<li>Explicar como navegar no painel</li>
+</ul>Pode reformular a pergunta ou usar os atalhos abaixo. 👇`,
+      chips: CHIPS_INICIAL,
+    };
+  }
+
+  function formatDate(str) {
+    if (!str) return "—";
+    const [y, m, d] = str.split("-");
+    return `${d}/${m}/${y}`;
+  }
+
+  // ── Renderização ────────────────────────────────────────────────
+
+  function appendBubble(html, role) {
+    const el = document.createElement("div");
+    el.className = `chat-bubble ${role}`;
+    el.innerHTML = html;
+    messagesEl.appendChild(el);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+    return el;
+  }
+
+  function showTyping() {
+    const el = document.createElement("div");
+    el.className = "chat-typing";
+    el.id = "chatTyping";
+    el.innerHTML = "<span></span><span></span><span></span>";
+    messagesEl.appendChild(el);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  function removeTyping() {
+    const el = document.getElementById("chatTyping");
+    if (el) el.remove();
+  }
+
+  function setChips(chips) {
+    chipsEl.innerHTML = "";
+    chips.forEach((label) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "chat-chip";
+      btn.textContent = label;
+      btn.addEventListener("click", () => handleUserMessage(label));
+      chipsEl.appendChild(btn);
+    });
+  }
+
+  function handleUserMessage(text) {
+    if (!text.trim()) return;
+    appendBubble(text, "user");
+    setChips([]);
+    input.value = "";
+
+    showTyping();
+    setTimeout(() => {
+      removeTyping();
+      const { html, chips } = getBotReply(text);
+      appendBubble(html, "bot");
+      setChips(chips || CHIPS_FOLLOWUP);
+    }, 600 + Math.random() * 400);
+  }
+
+  function openChat() {
+    chatOpen = true;
+    panel.classList.remove("hidden");
+    fab.querySelector(".chat-fab-icon").classList.add("hidden");
+    fab.querySelector(".chat-fab-close").classList.remove("hidden");
+    fab.setAttribute("aria-label", "Fechar assistente");
+
+    if (!greeted) {
+      greeted = true;
+      setTimeout(() => {
+        appendBubble(
+          `Oi! Sou o <strong>Assistente Editorial</strong> — ainda em modo de demonstração, mas já consigo te ajudar a entender o que está acontecendo no fluxo. 🧭<br><br>
+Posso identificar <strong>gargalos</strong>, mostrar <strong>bloqueios ativos</strong>, prazos em risco e te orientar pelo painel. Por onde quer começar?`,
+          "bot"
+        );
+        setChips(CHIPS_INICIAL);
+      }, 300);
+    }
+
+    setTimeout(() => input.focus(), 350);
+  }
+
+  function closeChat() {
+    chatOpen = false;
+    panel.classList.add("hidden");
+    fab.querySelector(".chat-fab-icon").classList.remove("hidden");
+    fab.querySelector(".chat-fab-close").classList.add("hidden");
+    fab.setAttribute("aria-label", "Abrir assistente");
+    fab.focus();
+  }
+
+  // ── Eventos ─────────────────────────────────────────────────────
+
+  fab.addEventListener("click", () => (chatOpen ? closeChat() : openChat()));
+  closeBtn.addEventListener("click", closeChat);
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    handleUserMessage(input.value.trim());
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && chatOpen) closeChat();
+  });
+})();

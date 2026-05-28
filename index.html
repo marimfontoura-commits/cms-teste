@@ -453,6 +453,46 @@
       </div>
     </div>
 
+    <!-- Chatbot Assistente -->
+    <button id="chatFab" class="chat-fab" aria-label="Abrir assistente" title="Assistente editorial">
+      <span class="material-symbols-rounded chat-fab-icon" aria-hidden="true">smart_toy</span>
+      <span class="material-symbols-rounded chat-fab-close hidden" aria-hidden="true">close</span>
+    </button>
+
+    <div id="chatPanel" class="chat-panel hidden" role="dialog" aria-modal="false" aria-label="Assistente editorial">
+      <div class="chat-panel-header">
+        <div class="chat-header-info">
+          <span class="chat-avatar" aria-hidden="true">
+            <span class="material-symbols-rounded">smart_toy</span>
+          </span>
+          <div>
+            <strong>Assistente Editorial</strong>
+            <span class="chat-demo-badge">Demo</span>
+          </div>
+        </div>
+        <button type="button" id="chatClose" class="ghost chat-close-btn" aria-label="Fechar assistente">
+          <span class="material-symbols-rounded" aria-hidden="true">close</span>
+        </button>
+      </div>
+
+      <div class="chat-messages" id="chatMessages" aria-live="polite" aria-atomic="false"></div>
+
+      <div class="chat-chips" id="chatChips"></div>
+
+      <form class="chat-input-row" id="chatForm" autocomplete="off">
+        <input
+          type="text"
+          id="chatInput"
+          placeholder="Pergunte algo sobre o fluxo..."
+          aria-label="Mensagem para o assistente"
+          maxlength="300"
+        />
+        <button type="submit" class="chat-send-btn" aria-label="Enviar mensagem">
+          <span class="material-symbols-rounded" aria-hidden="true">send</span>
+        </button>
+      </form>
+    </div>
+
     <script src="app.js"></script>
   </body>
 </html>
